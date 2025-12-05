@@ -6,11 +6,12 @@ import {
   getPrediction,
   runGeneration,
   fluxSchnell,
+  fluxDev,
 } from "@/server/ai/replicate";
 import { downloadAndUploadImage } from "@/server/utils/upload";
 
 // The model to use for generation - easy to swap out
-const imageModel = fluxSchnell;
+const imageModel = fluxDev;
 
 const aspectRatioSchema = z.enum(["1:1", "16:9", "9:16", "4:3", "3:2"]);
 

@@ -18,7 +18,9 @@ export default function ProjectPage() {
   const projectId = params.id as string;
 
   const [editor, setEditor] = useState<Editor | null>(null);
-  const [selectedFrameId, setSelectedFrameId] = useState<TLShapeId | null>(null);
+  const [selectedFrameId, setSelectedFrameId] = useState<TLShapeId | null>(
+    null,
+  );
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
 
@@ -44,6 +46,7 @@ export default function ProjectPage() {
 
   const handleEditorMount = useCallback((editorInstance: Editor) => {
     setEditor(editorInstance);
+    editorInstance.user.updateUserPreferences({ isSnapMode: true });
   }, []);
 
   const handleFrameSelect = useCallback((frameId: TLShapeId | null) => {
@@ -123,11 +126,7 @@ export default function ProjectPage() {
           ) : (
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold">{project.name}</h1>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={handleStartEditName}
-              >
+              <Button size="icon" variant="ghost" onClick={handleStartEditName}>
                 <Pencil className="h-3 w-3" />
               </Button>
             </div>
@@ -176,4 +175,3 @@ export default function ProjectPage() {
     </div>
   );
 }
-
