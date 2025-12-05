@@ -30,6 +30,25 @@ const ASPECT_RATIOS = [
 
 type AspectRatio = (typeof ASPECT_RATIOS)[number]["value"];
 
+// Find the closest matching aspect ratio for given dimensions
+function detectAspectRatio(width: number, height: number): AspectRatio {
+  const frameRatio = width / height;
+
+  let closest: AspectRatio = "1:1";
+  let smallestDiff = Infinity;
+
+  for (const ratio of ASPECT_RATIOS) {
+    const targetRatio = ratio.width / ratio.height;
+    const diff = Math.abs(frameRatio - targetRatio);
+    if (diff < smallestDiff) {
+      smallestDiff = diff;
+      closest = ratio.value;
+    }
+  }
+
+  return closest;
+}
+
 interface GeneratePanelProps {
   projectId: string;
   editor: Editor | null;
@@ -42,7 +61,6 @@ export function GeneratePanel({
   selectedFrameId,
 }: GeneratePanelProps) {
   const [prompt, setPrompt] = useState("");
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [newFrameAspectRatio, setNewFrameAspectRatio] =
     useState<AspectRatio>("1:1");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -184,7 +202,14 @@ export function GeneratePanel({
   }, [framePreviewUrl]);
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || !editor || !selectedFrameId) return;
+
+    // Get the frame dimensions to detect aspect ratio
+    const shape = editor.getShape(selectedFrameId);
+    if (shape?.type !== "frame") return;
+
+    const bounds = editor.getShapeGeometry(shape).bounds;
+    const detectedAspectRatio = detectAspectRatio(bounds.width, bounds.height);
 
     setIsGenerating(true);
 
@@ -208,7 +233,7 @@ export function GeneratePanel({
     generateMutation.mutate({
       projectId,
       prompt: prompt.trim(),
-      aspectRatio,
+      aspectRatio: detectedAspectRatio,
       referenceImage,
     });
   };
@@ -274,6 +299,19 @@ export function GeneratePanel({
     );
   }
 
+  // Get current frame info for display
+  const getFrameInfo = () => {
+    if (!editor || !selectedFrameId) return null;
+    const shape = editor.getShape(selectedFrameId);
+    if (shape?.type !== "frame") return null;
+    const bounds = editor.getShapeGeometry(shape).bounds;
+    const detectedRatio = detectAspectRatio(bounds.width, bounds.height);
+    const ratioInfo = ASPECT_RATIOS.find((r) => r.value === detectedRatio);
+    return ratioInfo;
+  };
+
+  const frameInfo = getFrameInfo();
+
   return (
     <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
       <div className="border-b p-4">
@@ -287,35 +325,18 @@ export function GeneratePanel({
         <div className="space-y-6 p-4">
           {/* Frame Preview */}
           <div className="space-y-2">
-            <Label>Frame Preview</Label>
+            <div className="flex items-center justify-between">
+              <Label>Frame Preview</Label>
+              {frameInfo && (
+                <span className="text-muted-foreground text-xs">
+                  {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
+                </span>
+              )}
+            </div>
             <FramePreview
               previewUrl={framePreviewUrl}
               onRefresh={exportFrameAsImage}
             />
-          </div>
-
-          {/* Aspect Ratio */}
-          <div className="space-y-2">
-            <Label htmlFor="aspect-ratio">Output Size</Label>
-            <Select
-              value={aspectRatio}
-              onValueChange={(v) => setAspectRatio(v as AspectRatio)}
-            >
-              <SelectTrigger id="aspect-ratio">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ASPECT_RATIOS.map((ratio) => (
-                  <SelectItem key={ratio.value} value={ratio.value}>
-                    {ratio.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-muted-foreground text-xs">
-              {ASPECT_RATIOS.find((r) => r.value === aspectRatio)?.width} ×{" "}
-              {ASPECT_RATIOS.find((r) => r.value === aspectRatio)?.height}px
-            </p>
           </div>
 
           {/* Prompt */}
