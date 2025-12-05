@@ -151,7 +151,6 @@ export default function ProjectPage() {
         <GenerationsPanel
           projectId={projectId}
           editor={editor}
-          generations={project.generations}
           selectedFrameId={selectedFrameId}
         />
 

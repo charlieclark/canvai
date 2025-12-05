@@ -217,6 +217,46 @@ export const generationRouter = createTRPCRouter({
    * Generate synchronously (start + poll until complete)
    * Useful for simpler UX but blocks longer
    */
+  /**
+   * Delete a generation
+   */
+  delete: protectedProcedure
+    .input(z.object({ generationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const generation = await ctx.db.generation.findUnique({
+        where: { id: input.generationId },
+        include: {
+          project: {
+            select: { userId: true },
+          },
+        },
+      });
+
+      if (!generation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Generation not found",
+        });
+      }
+
+      if (generation.project.userId !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this generation",
+        });
+      }
+
+      await ctx.db.generation.delete({
+        where: { id: input.generationId },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Generate synchronously (start + poll until complete)
+   * Useful for simpler UX but blocks longer
+   */
   generateSync: protectedProcedure
     .input(
       z.object({

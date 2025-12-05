@@ -2,24 +2,54 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, Loader2, ImageIcon } from "lucide-react";
+import { Download, Plus, Loader2, ImageIcon, Trash2 } from "lucide-react";
 import { createShapeId, type Editor, type TLAssetId, type TLShapeId } from "tldraw";
 import type { Generation } from "@prisma/client";
 import Image from "next/image";
+import { api } from "@/trpc/react";
+import { useToast } from "@/hooks/use-toast";
 
 interface GenerationsPanelProps {
   projectId: string;
   editor: Editor | null;
-  generations: Generation[];
   selectedFrameId: TLShapeId | null;
 }
 
 export function GenerationsPanel({
-  projectId: _projectId,
+  projectId,
   editor,
-  generations,
   selectedFrameId,
 }: GenerationsPanelProps) {
+  const { toast } = useToast();
+  const utils = api.useUtils();
+
+  const { data: generations = [] } = api.generation.list.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
+
+  const deleteGeneration = api.generation.delete.useMutation({
+    onSuccess: () => {
+      void utils.generation.list.invalidate({ projectId });
+      toast({
+        title: "Generation deleted",
+        description: "The generation has been removed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to delete",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (generation: Generation) => {
+    if (deleteGeneration.isPending) return;
+    deleteGeneration.mutate({ generationId: generation.id });
+  };
+
   const handleAddToCanvas = (generation: Generation) => {
     if (!editor || !generation.imageUrl) return;
 
@@ -194,6 +224,15 @@ export function GenerationsPanel({
                     title="Download"
                   >
                     <Download className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    onClick={() => handleDelete(generation)}
+                    disabled={deleteGeneration.isPending}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
