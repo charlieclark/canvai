@@ -5,9 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { ProjectCanvas } from "./_components/project-canvas";
 import { GenerationsPanel } from "./_components/generations-panel";
 import { GeneratePanel } from "./_components/generate-panel";
+import { ProjectHeader, type SaveStatus } from "./_components/project-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Check, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useCallback } from "react";
 import type { Editor, TLShapeId } from "tldraw";
@@ -21,8 +21,7 @@ export default function ProjectPage() {
   const [selectedFrameId, setSelectedFrameId] = useState<TLShapeId | null>(
     null,
   );
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const utils = api.useUtils();
 
@@ -31,10 +30,9 @@ export default function ProjectPage() {
     { enabled: !!projectId },
   );
 
-  const updateProject = api.project.update.useMutation({
+  const updateProjectName = api.project.update.useMutation({
     onSuccess: () => {
       void utils.project.getById.invalidate({ id: projectId });
-      setIsEditingName(false);
     },
   });
 
@@ -53,26 +51,20 @@ export default function ProjectPage() {
     setSelectedFrameId(frameId);
   }, []);
 
-  const handleStartEditName = () => {
-    if (project) {
-      setEditedName(project.name);
-      setIsEditingName(true);
-    }
-  };
+  const handleSaveStatusChange = useCallback((status: SaveStatus) => {
+    setSaveStatus(status);
+  }, []);
 
-  const handleSaveName = () => {
-    if (editedName.trim() && editedName !== project?.name) {
-      updateProject.mutate({ id: projectId, name: editedName.trim() });
-    } else {
-      setIsEditingName(false);
-    }
-  };
+  const handleUpdateName = useCallback(
+    (name: string) => {
+      updateProjectName.mutate({ id: projectId, name });
+    },
+    [projectId, updateProjectName],
+  );
 
-  const handleDeleteProject = () => {
-    if (confirm("Are you sure you want to delete this project?")) {
-      deleteProject.mutate({ id: projectId });
-    }
-  };
+  const handleDeleteProject = useCallback(() => {
+    deleteProject.mutate({ id: projectId });
+  }, [deleteProject, projectId]);
 
   if (isLoading) {
     return (
@@ -99,51 +91,13 @@ export default function ProjectPage() {
   return (
     <div className="flex h-screen flex-col">
       {/* Top Nav */}
-      <header className="bg-background flex h-14 shrink-0 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/projects">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-
-          {isEditingName ? (
-            <div className="flex items-center gap-2">
-              <Input
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                className="h-8 w-48"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSaveName();
-                  if (e.key === "Escape") setIsEditingName(false);
-                }}
-              />
-              <Button size="icon" variant="ghost" onClick={handleSaveName}>
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold">{project.name}</h1>
-              <Button size="icon" variant="ghost" onClick={handleStartEditName}>
-                <Pencil className="h-3 w-3" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDeleteProject}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </header>
+      <ProjectHeader
+        projectName={project.name}
+        saveStatus={saveStatus}
+        onUpdateName={handleUpdateName}
+        onDelete={handleDeleteProject}
+        isUpdatingName={updateProjectName.isPending}
+      />
 
       {/* Three-panel layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -161,6 +115,7 @@ export default function ProjectPage() {
             initialSnapshot={project.snapshot}
             onEditorMount={handleEditorMount}
             onFrameSelect={handleFrameSelect}
+            onSaveStatusChange={handleSaveStatusChange}
           />
         </div>
 
