@@ -2,11 +2,15 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import {
-  startFluxGeneration,
-  getFluxPrediction,
-  runFluxGeneration,
-} from "@/server/ai/replicate/flux";
+  startGeneration,
+  getPrediction,
+  runGeneration,
+  fluxSchnell,
+} from "@/server/ai/replicate";
 import { downloadAndUploadImage } from "@/server/utils/upload";
+
+// The model to use for generation - easy to swap out
+const imageModel = fluxSchnell;
 
 const aspectRatioSchema = z.enum(["1:1", "16:9", "9:16", "4:3", "3:2"]);
 
@@ -72,8 +76,8 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start Flux generation
-        const prediction = await startFluxGeneration({
+        // Start image generation
+        const prediction = await startGeneration(imageModel, {
           prompt: input.prompt,
           referenceImage: input.referenceImage,
           width: dimensions.width,
@@ -140,7 +144,7 @@ export const generationRouter = createTRPCRouter({
       // Poll Replicate if we have an ID
       if (generation.replicateId) {
         try {
-          const prediction = await getFluxPrediction(generation.replicateId);
+          const prediction = await getPrediction(generation.replicateId);
 
           if (prediction.status === "succeeded" && prediction.output?.[0]) {
             // Download and upload to our storage
@@ -258,7 +262,7 @@ export const generationRouter = createTRPCRouter({
 
       try {
         // Run full generation (blocking)
-        const prediction = await runFluxGeneration({
+        const prediction = await runGeneration(imageModel, {
           prompt: input.prompt,
           referenceImage: input.referenceImage,
           width: dimensions.width,

@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
   Tldraw,
   type Editor,
   type TLShapeId,
   type StoreSnapshot,
   type TLRecord,
+  type TLAssetStore,
   loadSnapshot,
+  uniqueId,
 } from "tldraw";
 import "tldraw/tldraw.css";
 import { api } from "@/trpc/react";
@@ -29,6 +31,36 @@ export function ProjectCanvas({
   const editorRef = useRef<Editor | null>(null);
 
   const updateProject = api.project.update.useMutation();
+
+  // Asset store for handling hosted images
+  const assetStore = useMemo<TLAssetStore>(
+    () => ({
+      async upload(_asset, file) {
+        const id = uniqueId();
+        const filename = `${id}-${file.name}`.replaceAll(/[^\w.-]/g, "-");
+
+        const response = await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type,
+          },
+          body: file,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        const blob = (await response.json()) as { url: string };
+        return { src: blob.url };
+      },
+
+      resolve(asset) {
+        return asset.props.src;
+      },
+    }),
+    [],
+  );
 
   // Debounced save function
   const saveSnapshot = useDebouncedCallback((editor: Editor) => {
@@ -101,7 +133,7 @@ export function ProjectCanvas({
 
   return (
     <div className="h-full w-full">
-      <Tldraw onMount={handleMount} />
+      <Tldraw onMount={handleMount} assets={assetStore} />
     </div>
   );
 }
