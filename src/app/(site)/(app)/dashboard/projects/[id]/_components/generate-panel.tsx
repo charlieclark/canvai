@@ -18,7 +18,7 @@ import { api } from "@/trpc/react";
 import { FramePreview } from "./frame-preview";
 
 // Scale factor for displaying frames at a reasonable size on canvas
-const FRAME_DISPLAY_SCALE = 0.5;
+const FRAME_DISPLAY_SCALE = 1;
 
 const ASPECT_RATIOS = [
   { value: "1:1", label: "1:1 (Square)", width: 1024, height: 1024 },
@@ -295,50 +295,59 @@ export function GeneratePanel({
             </Button>
 
             {/* List of existing frames */}
-            {editor && (() => {
-              const existingFrames = editor
-                .getCurrentPageShapes()
-                .filter((shape) => shape.type === "frame");
-              
-              if (existingFrames.length === 0) return null;
-              
-              return (
-                <div className="mt-6 space-y-2">
-                  <Label className="text-muted-foreground text-xs uppercase tracking-wide">
-                    Existing Frames
-                  </Label>
-                  <div className="space-y-1">
-                    {existingFrames.map((frame) => {
-                      const bounds = editor.getShapeGeometry(frame).bounds;
-                      const ratio = detectAspectRatio(bounds.width, bounds.height);
-                      const ratioInfo = ASPECT_RATIOS.find((r) => r.value === ratio);
-                      const frameName = (frame.props as { name?: string }).name || "Frame";
-                      
-                      return (
-                        <button
-                          key={frame.id}
-                          onClick={() => {
-                            editor.select(frame.id);
-                            editor.zoomToSelection({ animation: { duration: 200 } });
-                          }}
-                          className="hover:bg-muted flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors"
-                        >
-                          <Frame className="text-muted-foreground h-4 w-4 shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium">
-                              {frameName}
+            {editor &&
+              (() => {
+                const existingFrames = editor
+                  .getCurrentPageShapes()
+                  .filter((shape) => shape.type === "frame");
+
+                if (existingFrames.length === 0) return null;
+
+                return (
+                  <div className="mt-6 space-y-2">
+                    <Label className="text-muted-foreground text-xs tracking-wide uppercase">
+                      Existing Frames
+                    </Label>
+                    <div className="space-y-1">
+                      {existingFrames.map((frame) => {
+                        const bounds = editor.getShapeGeometry(frame).bounds;
+                        const ratio = detectAspectRatio(
+                          bounds.width,
+                          bounds.height,
+                        );
+                        const ratioInfo = ASPECT_RATIOS.find(
+                          (r) => r.value === ratio,
+                        );
+                        const frameName =
+                          (frame.props as { name?: string }).name || "Frame";
+
+                        return (
+                          <button
+                            key={frame.id}
+                            onClick={() => {
+                              editor.select(frame.id);
+                              editor.zoomToSelection({
+                                animation: { duration: 200 },
+                              });
+                            }}
+                            className="hover:bg-muted flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors"
+                          >
+                            <Frame className="text-muted-foreground h-4 w-4 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium">
+                                {frameName}
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                {ratioInfo?.width}×{ratioInfo?.height}
+                              </div>
                             </div>
-                            <div className="text-muted-foreground text-xs">
-                              {ratioInfo?.width}×{ratioInfo?.height}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
           </div>
         </div>
       </div>

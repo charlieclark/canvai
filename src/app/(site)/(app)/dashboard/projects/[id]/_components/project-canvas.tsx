@@ -205,6 +205,7 @@ export function ProjectCanvas({
   return (
     <div className="h-full w-full">
       <Tldraw
+        licenseKey="tldraw-2026-03-14/WyJUWlhfdlRCZCIsWyIqIl0sMTYsIjIwMjYtMDMtMTQiXQ.hYq9Rva6LHHniBX2XLwl//6NTQtiZutQR39uNRHfwSVvpudnHl6HosiZoA7gAwShslzMJeojyvRpsLbAAZgCoA"
         onMount={handleMount}
         assets={assetStore}
         components={{
