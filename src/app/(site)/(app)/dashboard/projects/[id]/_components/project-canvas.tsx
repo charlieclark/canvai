@@ -76,16 +76,28 @@ export function ProjectCanvas({
     (editor: Editor) => {
       const selectedShapes = editor.getSelectedShapes();
 
-      // Find the first selected frame
+      // First, check if a frame itself is directly selected
       const selectedFrame = selectedShapes.find(
         (shape) => shape.type === "frame",
       );
 
       if (selectedFrame) {
         onFrameSelect(selectedFrame.id);
-      } else {
-        onFrameSelect(null);
+        return;
       }
+
+      // If no frame is directly selected, check if any selected shape is a child of a frame
+      for (const shape of selectedShapes) {
+        if (shape.parentId) {
+          const parent = editor.getShape(shape.parentId);
+          if (parent?.type === "frame") {
+            onFrameSelect(parent.id);
+            return;
+          }
+        }
+      }
+
+      onFrameSelect(null);
     },
     [onFrameSelect],
   );
