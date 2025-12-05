@@ -12,10 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Frame, Loader2 } from "lucide-react";
+import { Sparkles, Frame, Loader2, Plus } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import { FramePreview } from "./frame-preview";
+
+// Scale factor for displaying frames at a reasonable size on canvas
+const FRAME_DISPLAY_SCALE = 0.5;
 
 const ASPECT_RATIOS = [
   { value: "1:1", label: "1:1 (Square)", width: 1024, height: 1024 },
@@ -40,10 +43,88 @@ export function GeneratePanel({
 }: GeneratePanelProps) {
   const [prompt, setPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
+  const [newFrameAspectRatio, setNewFrameAspectRatio] =
+    useState<AspectRatio>("1:1");
   const [isGenerating, setIsGenerating] = useState(false);
   const [framePreviewUrl, setFramePreviewUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
+
+  // Create a new frame on the canvas
+  const handleCreateFrame = () => {
+    if (!editor) return;
+
+    const ratio = ASPECT_RATIOS.find((r) => r.value === newFrameAspectRatio);
+    if (!ratio) return;
+
+    // Scale down for display, keeping aspect ratio
+    const displayWidth = ratio.width * FRAME_DISPLAY_SCALE;
+    const displayHeight = ratio.height * FRAME_DISPLAY_SCALE;
+
+    // Get all existing frames
+    const existingFrames = editor
+      .getCurrentPageShapes()
+      .filter((shape) => shape.type === "frame");
+
+    // Helper to check if a rectangle overlaps with any existing frame
+    const overlapsExistingFrame = (x: number, y: number) => {
+      const padding = 40; // Gap between frames
+      const newLeft = x;
+      const newRight = x + displayWidth;
+      const newTop = y;
+      const newBottom = y + displayHeight;
+
+      return existingFrames.some((frame) => {
+        const bounds = editor.getShapeGeometry(frame).bounds;
+        const frameLeft = frame.x - padding;
+        const frameRight = frame.x + bounds.width + padding;
+        const frameTop = frame.y - padding;
+        const frameBottom = frame.y + bounds.height + padding;
+
+        // Check for overlap
+        return (
+          newLeft < frameRight &&
+          newRight > frameLeft &&
+          newTop < frameBottom &&
+          newBottom > frameTop
+        );
+      });
+    };
+
+    // Start at center (0,0), offset so frame center is at origin
+    let x = -displayWidth / 2;
+    const y = -displayHeight / 2;
+    const stepSize = displayWidth + 60; // Move by frame width + gap
+
+    // Move right until we find a non-overlapping spot
+    const maxAttempts = 50;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (!overlapsExistingFrame(x, y)) {
+        break;
+      }
+      x += stepSize;
+    }
+
+    // Generate a unique ID for the frame
+    const frameId = `shape:frame-${Date.now()}` as TLShapeId;
+
+    // Create frame at the found position
+    editor.createShape({
+      id: frameId,
+      type: "frame",
+      x,
+      y,
+      props: {
+        w: displayWidth,
+        h: displayHeight,
+        name: `${ratio.label}`,
+      },
+    });
+
+    // Select the new frame and center the view on it
+    editor.select(frameId);
+    editor.zoomToSelection({ animation: { duration: 200 } });
+  };
 
   const generateMutation = api.generation.generateSync.useMutation({
     onSuccess: () => {
@@ -134,21 +215,60 @@ export function GeneratePanel({
 
   // Empty state - no frame selected
   if (!selectedFrameId) {
+    const selectedRatio = ASPECT_RATIOS.find(
+      (r) => r.value === newFrameAspectRatio,
+    );
+
     return (
       <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
         <div className="border-b p-4">
           <h2 className="font-semibold">Generate</h2>
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-          <div className="bg-muted mb-4 rounded-full p-4">
-            <Frame className="text-muted-foreground h-8 w-8" />
+        <div className="flex flex-1 flex-col p-6">
+          <div className="mb-6 text-center">
+            <div className="bg-muted mx-auto mb-4 w-fit rounded-full p-4">
+              <Frame className="text-muted-foreground h-8 w-8" />
+            </div>
+            <h3 className="mb-2 font-medium">No frame selected</h3>
+            <p className="text-muted-foreground text-sm">
+              Create a frame to get started, or select an existing frame on the
+              canvas.
+            </p>
           </div>
-          <h3 className="mb-2 font-medium">No frame selected</h3>
-          <p className="text-muted-foreground text-sm">
-            Select a frame on the canvas to generate an image from its contents,
-            or create a new frame using the frame tool.
-          </p>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-frame-aspect-ratio">Frame Size</Label>
+              <Select
+                value={newFrameAspectRatio}
+                onValueChange={(v) => setNewFrameAspectRatio(v as AspectRatio)}
+              >
+                <SelectTrigger id="new-frame-aspect-ratio">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ASPECT_RATIOS.map((ratio) => (
+                    <SelectItem key={ratio.value} value={ratio.value}>
+                      {ratio.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                {selectedRatio?.width} × {selectedRatio?.height}px
+              </p>
+            </div>
+
+            <Button
+              onClick={handleCreateFrame}
+              disabled={!editor}
+              className="w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Frame
+            </Button>
+          </div>
         </div>
       </div>
     );
