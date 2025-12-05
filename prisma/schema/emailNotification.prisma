@@ -1,0 +1,9 @@
+model EmailNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  sentAt    DateTime @default(now())
+
+  @@index([userId, type])
+  @@index([userId, type, sentAt])
+} 

@@ -1,0 +1,30 @@
+enum EmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
+model QueuedEmail {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Email content
+  to      String
+  subject String
+  html    String
+
+  // Metadata
+  status   EmailStatus @default(PENDING)
+  error    String?
+  sentAt   DateTime?
+  attempts Int         @default(0)
+
+  // Optional relations
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([userId])
+}

@@ -1,0 +1,15 @@
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String
+  role      Role     @default(MEMBER)
+
+  // Relations
+  queuedEmails QueuedEmail[]
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
