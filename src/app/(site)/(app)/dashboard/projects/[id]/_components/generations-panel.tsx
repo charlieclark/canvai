@@ -3,7 +3,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Loader2, ImageIcon } from "lucide-react";
-import type { Editor, TLAssetId } from "tldraw";
+import type { Editor, TLAssetId, TLShapeId } from "tldraw";
 import type { Generation } from "@prisma/client";
 import Image from "next/image";
 
@@ -11,12 +11,14 @@ interface GenerationsPanelProps {
   projectId: string;
   editor: Editor | null;
   generations: Generation[];
+  selectedFrameId: TLShapeId | null;
 }
 
 export function GenerationsPanel({
   projectId: _projectId,
   editor,
   generations,
+  selectedFrameId,
 }: GenerationsPanelProps) {
   const handleAddToCanvas = (generation: Generation) => {
     if (!editor || !generation.imageUrl) return;
@@ -45,7 +47,53 @@ export function GenerationsPanel({
       ]);
     }
 
-    // Create image shape at center of viewport
+    // If a frame is selected, place the image inside the frame and resize to fit
+    if (selectedFrameId) {
+      const frame = editor.getShape(selectedFrameId);
+      if (frame?.type === "frame") {
+        const frameProps = frame.props as { w: number; h: number };
+        const frameW = frameProps.w;
+        const frameH = frameProps.h;
+
+        // Calculate aspect-ratio-preserving dimensions to fit at 50% of frame size
+        const imageAspect = generation.width / generation.height;
+        const targetW = frameW * 0.5;
+        const targetH = frameH * 0.5;
+        const targetAspect = targetW / targetH;
+
+        let newWidth: number;
+        let newHeight: number;
+
+        if (imageAspect > targetAspect) {
+          // Image is wider - fit to target width
+          newWidth = targetW;
+          newHeight = targetW / imageAspect;
+        } else {
+          // Image is taller - fit to target height
+          newHeight = targetH;
+          newWidth = targetH * imageAspect;
+        }
+
+        // Center the image within the frame (coordinates are relative to frame when parentId is set)
+        const offsetX = (frameW - newWidth) / 2;
+        const offsetY = (frameH - newHeight) / 2;
+
+        editor.createShape({
+          type: "image",
+          x: offsetX,
+          y: offsetY,
+          parentId: selectedFrameId,
+          props: {
+            assetId: assetId,
+            w: newWidth,
+            h: newHeight,
+          },
+        });
+        return;
+      }
+    }
+
+    // Default: Create image shape at center of viewport
     const viewportCenter = editor.getViewportScreenCenter();
     const pagePoint = editor.screenToPage(viewportCenter);
 
@@ -65,16 +113,7 @@ export function GenerationsPanel({
     if (!generation.imageUrl) return;
 
     try {
-      const response = await fetch(generation.imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `generation-${generation.id}.webp`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      window.open(generation.imageUrl + "?download=1");
     } catch (error) {
       console.error("Failed to download:", error);
     }
@@ -179,4 +218,3 @@ export function GenerationsPanel({
     </div>
   );
 }
-

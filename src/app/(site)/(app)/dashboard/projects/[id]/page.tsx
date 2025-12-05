@@ -153,6 +153,7 @@ export default function ProjectPage() {
           projectId={projectId}
           editor={editor}
           generations={project.generations}
+          selectedFrameId={selectedFrameId}
         />
 
         {/* Main Panel - Canvas */}
