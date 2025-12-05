@@ -2,7 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { Book, Menu, Rocket } from "lucide-react";
+import { Folder, Menu, Rocket } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,9 +11,9 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
   {
-    name: "Boilerplate",
-    href: "/dashboard/example",
-    icon: Book,
+    name: "Projects",
+    href: "/dashboard/projects",
+    icon: Folder,
   },
 ];
 
