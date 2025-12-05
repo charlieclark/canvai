@@ -3,7 +3,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Loader2, ImageIcon } from "lucide-react";
-import type { Editor, TLAssetId, TLShapeId } from "tldraw";
+import { createShapeId, type Editor, type TLAssetId, type TLShapeId } from "tldraw";
 import type { Generation } from "@prisma/client";
 import Image from "next/image";
 
@@ -76,7 +76,9 @@ export function GenerationsPanel({
         const offsetX = (frameW - newWidth) / 2;
         const offsetY = (frameH - newHeight) / 2;
 
+        const shapeId = createShapeId();
         editor.createShape({
+          id: shapeId,
           type: "image",
           x: offsetX,
           y: offsetY,
@@ -87,6 +89,7 @@ export function GenerationsPanel({
             h: newHeight,
           },
         });
+        editor.select(shapeId);
         return;
       }
     }
@@ -95,7 +98,9 @@ export function GenerationsPanel({
     const viewportCenter = editor.getViewportScreenCenter();
     const pagePoint = editor.screenToPage(viewportCenter);
 
+    const shapeId = createShapeId();
     editor.createShape({
+      id: shapeId,
       type: "image",
       x: pagePoint.x - generation.width / 2,
       y: pagePoint.y - generation.height / 2,
@@ -105,6 +110,7 @@ export function GenerationsPanel({
         h: generation.height,
       },
     });
+    editor.select(shapeId);
   };
 
   const handleDownload = async (generation: Generation) => {
