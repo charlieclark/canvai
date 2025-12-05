@@ -16,6 +16,13 @@ const config: NextConfig = {
         pathname: "**",
         search: "",
       },
+      {
+        protocol: "https",
+        hostname: "euquhzdybpi8bw0d.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "**",
+        search: "",
+      },
     ],
   },
   outputFileTracingIncludes: {

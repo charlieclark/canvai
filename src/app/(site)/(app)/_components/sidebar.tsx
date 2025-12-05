@@ -54,9 +54,19 @@ function SidebarNavItem({ item, isActive, onClick }: SidebarNavItemProps) {
   );
 }
 
+// Check if we're on a project detail page (e.g., /dashboard/projects/[id])
+function isProjectDetailPage(pathname: string) {
+  return /^\/dashboard\/projects\/[^/]+$/.test(pathname);
+}
+
 export function AdminSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  // Hide sidebar on project detail pages
+  if (isProjectDetailPage(pathname)) {
+    return null;
+  }
 
   const handleNavItemClick = () => {
     setOpen(false);
