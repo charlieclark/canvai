@@ -55,23 +55,21 @@ export function GenerationsPanel({
         const frameW = frameProps.w;
         const frameH = frameProps.h;
 
-        // Calculate aspect-ratio-preserving dimensions to fit at 50% of frame size
+        // Calculate aspect-ratio-preserving dimensions to fit inside the frame
         const imageAspect = generation.width / generation.height;
-        const targetW = frameW * 0.5;
-        const targetH = frameH * 0.5;
-        const targetAspect = targetW / targetH;
+        const frameAspect = frameW / frameH;
 
         let newWidth: number;
         let newHeight: number;
 
-        if (imageAspect > targetAspect) {
-          // Image is wider - fit to target width
-          newWidth = targetW;
-          newHeight = targetW / imageAspect;
+        if (imageAspect > frameAspect) {
+          // Image is wider than frame - fit to frame width
+          newWidth = frameW;
+          newHeight = frameW / imageAspect;
         } else {
-          // Image is taller - fit to target height
-          newHeight = targetH;
-          newWidth = targetH * imageAspect;
+          // Image is taller than frame - fit to frame height
+          newHeight = frameH;
+          newWidth = frameH * imageAspect;
         }
 
         // Center the image within the frame (coordinates are relative to frame when parentId is set)
