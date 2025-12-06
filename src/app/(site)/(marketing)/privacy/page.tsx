@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Privacy Policy | Boilerplate",
+  title: "Privacy Policy | CanvAI",
   description: "Learn about how we handle and protect your data.",
 };
 

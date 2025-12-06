@@ -7,7 +7,7 @@ import { MainContent } from "./_components/main-content";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseProductionUrl()),
-  title: "Dashboard | Boilerplate",
+  title: "Dashboard | CanvAI",
   description: "Placeholder",
 };
 

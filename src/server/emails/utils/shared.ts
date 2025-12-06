@@ -10,7 +10,7 @@ export const resend = new Resend(env.RESEND_API_KEY);
 const AUDIENCE_ID = "9ac7c055-7aea-431f-ab45-5fd4ad0b7734";
 
 const baseOptions = {
-  from: "Boilerplate Team <hello@mail.nano-canvas.com>",
+  from: "CanvAI Team <hello@mail.nano-canvas.com>",
   replyTo: BASE_EMAIL,
   bcc: BASE_EMAIL,
 };

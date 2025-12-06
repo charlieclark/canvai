@@ -19,7 +19,7 @@ export function MainNav() {
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-semibold tracking-tight">
               <span className="bg-gradient-to-r from-[#66A8D4] to-[#0C5C91] bg-clip-text text-transparent">
-                Boilerplate
+                CanvAI
               </span>
             </span>
           </Link>

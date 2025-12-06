@@ -73,7 +73,7 @@ export function AdminSidebar() {
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center justify-between border-b px-6">
         <Link href="/" className="text-lg font-semibold">
-          Boilerplate
+          CanvAI
         </Link>
         <div className="flex items-center gap-2">
           <UserButton afterSignOutUrl="/" />
@@ -116,7 +116,7 @@ export function AdminSidebar() {
 
         <div className="flex flex-1 items-center gap-x-4">
           <Link href="/" className="lg:hidden">
-            <h1 className="text-lg font-semibold">Boilerplate</h1>
+            <h1 className="text-lg font-semibold">CanvAI</h1>
           </Link>
         </div>
       </div>

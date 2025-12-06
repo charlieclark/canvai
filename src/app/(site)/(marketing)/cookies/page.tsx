@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Cookie Policy | Boilerplate",
+  title: "Cookie Policy | CanvAI",
   description: "Learn about how we use cookies on our website.",
 };
 
@@ -9,7 +9,7 @@ export default function CookiesPage() {
   return (
     <PageContainer
       title="Cookie Policy"
-      description="Understanding how and why we use cookies on Boilerplate"
+      description="Understanding how and why we use cookies on CanvAI"
     >
       <h2>What Are Cookies?</h2>
       <p>

@@ -16,7 +16,7 @@ export const productLinks = [
   },
   {
     href: "/charlie",
-    label: "Boilerplate",
+    label: "CanvAI",
   },
 ] as const;
 

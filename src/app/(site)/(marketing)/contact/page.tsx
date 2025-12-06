@@ -2,7 +2,7 @@ import { PageContainer } from "@/components/shared/page-container";
 import { Mail } from "lucide-react";
 
 export const metadata = {
-  title: "Contact Us | Boilerplate",
+  title: "Contact Us | CanvAI",
   description: "Get in touch with us for any questions or concerns.",
 };
 

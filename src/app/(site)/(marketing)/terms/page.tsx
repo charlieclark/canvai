@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Terms of Service | Boilerplate",
+  title: "Terms of Service | CanvAI",
   description: "Read our terms of service and user agreement.",
 };
 
@@ -13,13 +13,13 @@ export default function TermsPage() {
     >
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing and using Boilerplate, you accept and agree to be bound by the
+        By accessing and using CanvAI, you accept and agree to be bound by the
         terms and provision of this agreement.
       </p>
 
       <h2>2. Description of Service</h2>
       <p>
-        Boilerplate provides a platform for creating and managing web pages. We reserve
+        CanvAI provides a platform for creating and managing web pages. We reserve
         the right to modify, suspend, or discontinue the service at any time
         without notice.
       </p>
@@ -104,7 +104,7 @@ export default function TermsPage() {
 
       <h2>8. Limitation of Liability</h2>
       <p>
-        Boilerplate shall not be liable for any indirect, incidental, special,
+        CanvAI shall not be liable for any indirect, incidental, special,
         consequential, or punitive damages resulting from your use of the service.
       </p>
 

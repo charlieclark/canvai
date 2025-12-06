@@ -22,7 +22,7 @@ export function HeroSection() {
             />
           </div>
           <h1 className="bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text py-[10px] text-5xl font-bold tracking-tight text-transparent sm:text-7xl">
-            Boilerplate
+            CanvAI
           </h1>
           <p className="text-md mt-6 leading-8 text-slate-600 md:text-lg">
             Showcase the things that make you, you.

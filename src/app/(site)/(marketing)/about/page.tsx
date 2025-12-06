@@ -1,8 +1,8 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "About Us | Boilerplate",
-  description: "Learn more about Boilerplate and our mission to bring stories to life with AI.",
+  title: "About Us | CanvAI",
+  description: "Learn more about CanvAI and our mission to bring stories to life with AI.",
 };
 
 export default function AboutPage() {
@@ -13,7 +13,7 @@ export default function AboutPage() {
     >
       <h2>Our Mission</h2>
       <p>
-        At Boilerplate, we're dedicated to making storytelling magical and accessible for everyone. 
+        At CanvAI, we're dedicated to making storytelling magical and accessible for everyone. 
         Our platform combines the power of AI with human creativity to transform simple images and notes 
         into beautiful, engaging storybooks that captivate readers of all ages.
       </p>
@@ -23,7 +23,7 @@ export default function AboutPage() {
         We provide an innovative platform that allows users to create personalized storybooks in minutes. 
         Simply upload an image, add some notes about your story, and our AI will help craft a unique 
         narrative complete with illustrations. Whether you're a parent creating bedtime stories, 
-        a teacher making educational content, or someone who loves to tell stories, Boilerplate makes 
+        a teacher making educational content, or someone who loves to tell stories, CanvAI makes 
         it easy and fun.
       </p>
 
@@ -50,7 +50,7 @@ export default function AboutPage() {
       <h2>Join Our Story</h2>
       <p>
         Whether you're looking to create bedtime stories for your children, educational content 
-        for your classroom, or simply want to bring your creative ideas to life, Boilerplate is 
+        for your classroom, or simply want to bring your creative ideas to life, CanvAI is 
         here to help. Join us in making storytelling more accessible and magical, one story at a time.
       </p>
     </PageContainer>

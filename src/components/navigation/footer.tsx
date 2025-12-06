@@ -39,7 +39,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground mt-2 text-sm">
-              Boilerplate Tagline
+              CanvAI Tagline
             </p>
             {/* <div className="mt-6 flex gap-4">
               {socialLinks.map((link) => {
@@ -139,7 +139,7 @@ export function Footer() {
         <div className="border-border border-t px-6 py-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} Boilerplate. All rights reserved.
+              © {new Date().getFullYear()} CanvAI. All rights reserved.
             </p>
             <div className="flex items-center gap-2">
               <p className="text-muted-foreground text-sm">
