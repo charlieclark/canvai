@@ -6,6 +6,7 @@ interface BrowserFrameProps {
   className?: string;
   domainPreview?: string;
   domain?: string;
+  variant?: "dark" | "light";
 }
 
 export function BrowserFrame({
@@ -13,13 +14,27 @@ export function BrowserFrame({
   className,
   domainPreview,
   domain,
+  variant = "light",
 }: BrowserFrameProps) {
+  const isLight = variant === "light";
+
   return (
     <div
-      className={cn("overflow-hidden rounded-lg border shadow-xl", className)}
+      className={cn(
+        "overflow-hidden rounded-xl border shadow-2xl backdrop-blur-sm",
+        isLight ? "border-gray-200 bg-white" : "border-white/10 bg-gray-900/80",
+        className,
+      )}
     >
       {/* Browser chrome/toolbar */}
-      <div className="relative z-10 flex h-10 items-center gap-2 border-b bg-gray-100/80 px-4 backdrop-blur-sm dark:bg-gray-900/80">
+      <div
+        className={cn(
+          "relative z-10 flex h-10 items-center gap-2 border-b px-4 backdrop-blur-sm",
+          isLight
+            ? "border-gray-200 bg-gray-100"
+            : "border-white/10 bg-gray-900/90",
+        )}
+      >
         {/* Window controls */}
         <div className="flex gap-2">
           <div className="h-3 w-3 rounded-full bg-red-500/90" />
@@ -29,13 +44,36 @@ export function BrowserFrame({
 
         {/* URL bar */}
         <div className="ml-4 flex-1">
-          <div className="flex h-6 items-center rounded-md bg-white/80 px-3 dark:bg-gray-800/80">
+          <div
+            className={cn(
+              "flex h-6 items-center rounded-md px-3",
+              isLight ? "bg-gray-200" : "bg-white/5",
+            )}
+          >
             <div className="flex-1">
-              <Link target="_blank" href={domain ?? ""}>
-                <p className="select-none text-xs text-gray-400">
+              {domain ? (
+                <Link target="_blank" href={domain}>
+                  <p
+                    className={cn(
+                      "select-none text-xs transition-colors",
+                      isLight
+                        ? "text-gray-400 hover:text-gray-600"
+                        : "text-white/40 hover:text-white/60",
+                    )}
+                  >
+                    {domainPreview || "nano-canvas.com"}
+                  </p>
+                </Link>
+              ) : (
+                <p
+                  className={cn(
+                    "select-none text-xs",
+                    isLight ? "text-gray-400" : "text-white/40",
+                  )}
+                >
                   {domainPreview || "nano-canvas.com"}
                 </p>
-              </Link>
+              )}
             </div>
           </div>
         </div>

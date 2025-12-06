@@ -3,49 +3,14 @@
 import { Button } from "@/components/ui/button";
 import useSignupModal from "@/hooks/use-signup";
 import { ArrowRight } from "lucide-react";
+import { BrowserFrame } from "./browser-frame";
+import { VideoSection } from "./video-section";
 
 export function CtaSection() {
   const { openSignupModal } = useSignupModal();
 
   return (
-    <section className="relative overflow-hidden bg-slate-900 py-24 md:py-32">
-      {/* Organic background shapes */}
-      <div className="pointer-events-none absolute inset-0">
-        <svg
-          viewBox="0 0 1440 500"
-          fill="none"
-          preserveAspectRatio="xMidYMid slice"
-          className="h-full w-full opacity-30"
-        >
-          <defs>
-            <linearGradient id="ctaGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0066CC" />
-              <stop offset="100%" stopColor="#0891B2" />
-            </linearGradient>
-            <linearGradient id="ctaGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#059669" />
-              <stop offset="100%" stopColor="#10B981" />
-            </linearGradient>
-            <linearGradient id="ctaGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#F97316" />
-              <stop offset="100%" stopColor="#FBBF24" />
-            </linearGradient>
-          </defs>
-          {/* Flowing shapes */}
-          <path
-            d="M-100 400 C100 300, 300 450, 500 380 C700 310, 900 420, 1100 350 C1300 280, 1400 380, 1540 320 L1540 600 L-100 600 Z"
-            fill="url(#ctaGrad1)"
-          />
-          <path
-            d="M-100 450 C150 380, 350 480, 550 420 C750 360, 950 450, 1150 400 C1350 350, 1450 420, 1540 380 L1540 600 L-100 600 Z"
-            fill="url(#ctaGrad2)"
-            opacity="0.7"
-          />
-          <circle cx="200" cy="100" r="80" fill="url(#ctaGrad3)" opacity="0.4" />
-          <circle cx="1200" cy="150" r="60" fill="#EC4899" opacity="0.3" />
-        </svg>
-      </div>
-
+    <section className="relative bg-slate-900 pb-24 md:pb-32">
       {/* Content */}
       <div className="relative mx-auto max-w-screen-xl px-6 text-center">
         <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">

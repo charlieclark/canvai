@@ -3,14 +3,16 @@
 import { Button } from "@/components/ui/button";
 import useSignupModal from "@/hooks/use-signup";
 import { ArrowRight } from "lucide-react";
+import { BrowserFrame } from "./browser-frame";
+import { VideoSection } from "./video-section";
 
 export function HeroSection() {
   const { openSignupModal } = useSignupModal();
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F5F3EE]">
+    <section className="relative flex min-h-screen items-center overflow-hidden bg-[#F5F3EE]">
       {/* Bottom flowing waves with ondulating animation */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[400px]">
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-[400px]">
         <svg
           viewBox="0 0 1440 400"
           fill="none"
@@ -106,73 +108,87 @@ export function HeroSection() {
       </div>
 
       {/* Left decorative element */}
-      <div className="pointer-events-none absolute -left-32 top-1/3 h-64 w-64 rounded-full bg-gradient-to-br from-[#0066CC]/10 to-[#059669]/5 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 -left-32 h-64 w-64 rounded-full bg-gradient-to-br from-[#0066CC]/10 to-[#059669]/5 blur-3xl" />
 
-      {/* Content - centered */}
-      <div className="relative z-10 mx-auto flex max-w-screen-xl flex-col items-center px-6 pb-32 text-center">
-        {/* Main headline */}
-        <h1 className="max-w-4xl text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl md:text-7xl lg:text-8xl">
-          Where creativity{" "}
-          <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-[#0066CC] via-[#0891B2] to-[#059669] bg-clip-text text-transparent">
-              flows
+      {/* Split view container */}
+      <div className="relative z-10 mx-auto grid w-full max-w-screen-xl grid-cols-1 items-center gap-12 px-6 pb-32 pt-24 lg:grid-cols-2 lg:gap-16">
+        {/* Left side - Content */}
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          {/* Main headline */}
+          <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
+            Where creativity{" "}
+            <span className="relative inline-block">
+              <span className="bg-gradient-to-r from-[#0066CC] via-[#0891B2] to-[#059669] bg-clip-text text-transparent">
+                flows
+              </span>
+              <svg
+                className="absolute -bottom-2 left-0 w-full"
+                viewBox="0 0 200 8"
+                fill="none"
+              >
+                <path
+                  d="M2 6C30 2, 70 2, 100 4C130 6, 170 6, 198 2"
+                  stroke="url(#underlineGrad)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <defs>
+                  <linearGradient
+                    id="underlineGrad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#0066CC" />
+                    <stop offset="50%" stopColor="#0891B2" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </span>
-            <svg
-              className="absolute -bottom-2 left-0 w-full"
-              viewBox="0 0 200 8"
-              fill="none"
+          </h1>
+
+          {/* Subheadline */}
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-600 md:text-xl">
+            Transform your creative vision into stunning visuals. Sketch,
+            design, and let AI bring your ideas to life.
+          </p>
+
+          {/* CTA buttons */}
+          <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row lg:items-start">
+            <Button
+              size="lg"
+              onClick={() => openSignupModal()}
+              className="group h-14 rounded-full bg-slate-900 px-8 text-base font-medium shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
             >
-              <path
-                d="M2 6C30 2, 70 2, 100 4C130 6, 170 6, 198 2"
-                stroke="url(#underlineGrad)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <defs>
-                <linearGradient
-                  id="underlineGrad"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stopColor="#0066CC" />
-                  <stop offset="50%" stopColor="#0891B2" />
-                  <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </span>
-        </h1>
+              Start Creating Free
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80"
+              onClick={() => {
+                document
+                  .getElementById("how-it-works")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              See How It Works
+            </Button>
+          </div>
+        </div>
 
-        {/* Subheadline */}
-        <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-600 md:text-xl">
-          Transform your creative vision into stunning visuals. Sketch, design,
-          and let AI bring your ideas to life.
-        </p>
-
-        {/* CTA buttons */}
-        <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
-          <Button
-            size="lg"
-            onClick={() => openSignupModal()}
-            className="group h-14 rounded-full bg-slate-900 px-8 text-base font-medium shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
+        {/* Right side - Browser Frame with Video */}
+        <div className="flex items-center justify-center lg:justify-end">
+          <BrowserFrame
+            className="w-full max-w-xl shadow-2xl"
+            domainPreview="nano-canvas.com/demo"
+            variant="light"
           >
-            Start Creating Free
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80"
-            onClick={() => {
-              document
-                .getElementById("how-it-works")
-                ?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            See How It Works
-          </Button>
+            <VideoSection className="aspect-video" />
+          </BrowserFrame>
         </div>
       </div>
     </section>
