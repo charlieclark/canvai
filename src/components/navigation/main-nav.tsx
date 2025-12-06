@@ -12,14 +12,20 @@ export function MainNav() {
   const { openSignIn } = useClerk();
   const { openSignupModal } = useSignupModal();
   return (
-    <div className="sticky left-0 right-0 top-0 z-50 px-4 py-4">
-      <nav className="mx-auto flex h-14 max-w-screen-xl items-center justify-between rounded-full border bg-white/80 px-4 shadow-[0_2px_20px_-2px_rgba(0,0,0,0.05)] backdrop-blur-md transition-all hover:bg-white/90 md:px-6">
+    <div className="fixed top-0 right-0 left-0 z-50 px-4 py-4">
+      <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between rounded-full border border-slate-200/60 bg-white/90 px-4 shadow-[0_2px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all md:px-6">
         {/* Logo */}
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5">
+            {/* Logo mark */}
+            <div className="relative h-8 w-8">
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#0066CC] to-[#059669]" />
+              <div className="absolute inset-[3px] rounded-md bg-white" />
+              <div className="absolute inset-[6px] rounded bg-gradient-to-br from-[#0066CC] to-[#059669]" />
+            </div>
             <span className="text-xl font-semibold tracking-tight">
-              <span className="bg-gradient-to-r from-[#66A8D4] to-[#0C5C91] bg-clip-text text-transparent">
-                CanvAI
+              <span className="bg-gradient-to-r from-[#0066CC] to-[#059669] bg-clip-text text-transparent">
+                CanvAi
               </span>
             </span>
           </Link>
@@ -32,7 +38,7 @@ export function MainNav() {
                     .getElementById(link.id)
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
               >
                 {link.label}
               </button>
@@ -41,11 +47,11 @@ export function MainNav() {
         </div>
 
         {/* Auth buttons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <SignedOut>
             <Button
               variant="ghost"
-              className="hidden rounded-full md:inline-flex"
+              className="hidden rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 md:inline-flex"
               onClick={() =>
                 openSignIn({
                   forceRedirectUrl: route_dashboard()(),
@@ -55,20 +61,18 @@ export function MainNav() {
               Sign In
             </Button>
             <Button
-              variant="default"
-              className="rounded-full"
+              className="rounded-full bg-slate-900 text-white shadow-sm hover:bg-slate-800"
               onClick={() => {
                 openSignupModal();
               }}
             >
-              Get Started Free
+              Get Started
             </Button>
           </SignedOut>
           <SignedIn>
             <Button
               suppressHydrationWarning
-              variant="default"
-              className="rounded-full"
+              className="rounded-full bg-slate-900 text-white shadow-sm hover:bg-slate-800"
               asChild
             >
               <Link href={route_dashboard()()}>Dashboard</Link>

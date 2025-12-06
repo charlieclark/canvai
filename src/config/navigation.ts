@@ -1,29 +1,28 @@
 export const mainNavLinks = [
   {
-    id: "how-it-works",
-    label: "How It Works",
+    id: "features",
+    label: "Features",
   },
   {
-    id: "examples",
-    label: "Boilerplates",
+    id: "how-it-works",
+    label: "How It Works",
   },
 ] as const;
 
 export const productLinks = [
   {
-    href: "/waitlist",
-    label: "Waitlist",
+    href: "/#features",
+    label: "Features",
   },
   {
-    href: "/charlie",
-    label: "CanvAI",
+    href: "/#how-it-works",
+    label: "How It Works",
   },
 ] as const;
 
 export const companyLinks = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  // { href: "/careers", label: "Careers" },
 ] as const;
 
 export const legalLinks = [
@@ -34,22 +33,22 @@ export const legalLinks = [
 
 export const socialLinks = [
   {
-    href: "https://x.com/example",
+    href: "https://x.com/canvai",
     icon: "Twitter",
     label: "Twitter",
   },
   {
-    href: "https://linkedin.com/company/example",
+    href: "https://linkedin.com/company/canvai",
     icon: "Linkedin",
     label: "LinkedIn",
   },
   {
-    href: "https://github.com/example",
+    href: "https://github.com/canvai",
     icon: "Github",
     label: "GitHub",
   },
   {
-    href: "mailto:hello@nano-canvas.com",
+    href: "mailto:hello@canvai.co",
     icon: "Mail",
     label: "Email",
   },
