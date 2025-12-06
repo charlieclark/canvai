@@ -7,25 +7,28 @@ import {
   runGeneration,
   fluxSchnell,
   fluxDev,
+  nanoBananaPro,
 } from "@/server/ai/replicate";
 import { downloadAndUploadImage } from "@/server/utils/upload";
+import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
+import { isArray } from "lodash";
 
 // The model to use for generation - easy to swap out
-const imageModel = fluxDev;
+const imageModel = nanoBananaPro;
 
-const aspectRatioSchema = z.enum(["1:1", "16:9", "9:16", "4:3", "3:2"]);
+// Build schema and dimensions map from shared ASPECT_RATIOS constant
+const aspectRatioValues = ASPECT_RATIOS.map((r) => r.value) as [
+  AspectRatio,
+  ...AspectRatio[],
+];
+const aspectRatioSchema = z.enum(aspectRatioValues);
 
-// Map aspect ratios to dimensions
 const ASPECT_RATIO_DIMENSIONS: Record<
-  string,
+  AspectRatio,
   { width: number; height: number }
-> = {
-  "1:1": { width: 1024, height: 1024 },
-  "16:9": { width: 1344, height: 768 },
-  "9:16": { width: 768, height: 1344 },
-  "4:3": { width: 1152, height: 896 },
-  "3:2": { width: 1216, height: 832 },
-};
+> = Object.fromEntries(
+  ASPECT_RATIOS.map((r) => [r.value, { width: r.width, height: r.height }]),
+) as Record<AspectRatio, { width: number; height: number }>;
 
 export const generationRouter = createTRPCRouter({
   /**
@@ -62,7 +65,7 @@ export const generationRouter = createTRPCRouter({
         });
       }
 
-      const dimensions = ASPECT_RATIO_DIMENSIONS[input.aspectRatio]!;
+      const dimensions = ASPECT_RATIO_DIMENSIONS[input.aspectRatio];
 
       // Create generation record
       const generation = await ctx.db.generation.create({
@@ -147,9 +150,13 @@ export const generationRouter = createTRPCRouter({
         try {
           const prediction = await getPrediction(generation.replicateId);
 
-          if (prediction.status === "succeeded" && prediction.output?.[0]) {
+          const output = isArray(prediction.output)
+            ? prediction.output[0]
+            : prediction.output;
+
+          if (prediction.status === "succeeded" && output) {
             // Download and upload to our storage
-            const imageUrl = await downloadAndUploadImage(prediction.output[0]);
+            const imageUrl = await downloadAndUploadImage(output);
 
             if (imageUrl) {
               const updated = await ctx.db.generation.update({
@@ -157,6 +164,14 @@ export const generationRouter = createTRPCRouter({
                 data: {
                   status: "COMPLETED",
                   imageUrl,
+                },
+              });
+              return updated;
+            } else {
+              const updated = await ctx.db.generation.update({
+                where: { id: generation.id },
+                data: {
+                  status: "FAILED",
                 },
               });
               return updated;
@@ -251,91 +266,5 @@ export const generationRouter = createTRPCRouter({
       });
 
       return { success: true };
-    }),
-
-  /**
-   * Generate synchronously (start + poll until complete)
-   * Useful for simpler UX but blocks longer
-   */
-  generateSync: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        prompt: z.string().min(1).max(2000),
-        aspectRatio: aspectRatioSchema,
-        referenceImage: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Verify project ownership
-      const project = await ctx.db.project.findUnique({
-        where: { id: input.projectId },
-        select: { userId: true },
-      });
-
-      if (!project) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Project not found",
-        });
-      }
-
-      if (project.userId !== ctx.user.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You do not have access to this project",
-        });
-      }
-
-      const dimensions = ASPECT_RATIO_DIMENSIONS[input.aspectRatio]!;
-
-      // Create generation record
-      const generation = await ctx.db.generation.create({
-        data: {
-          projectId: input.projectId,
-          prompt: input.prompt,
-          aspectRatio: input.aspectRatio,
-          width: dimensions.width,
-          height: dimensions.height,
-          status: "PROCESSING",
-        },
-      });
-
-      try {
-        // Run full generation (blocking)
-        const prediction = await runGeneration(imageModel, {
-          prompt: input.prompt,
-          referenceImage: input.referenceImage,
-          width: dimensions.width,
-          height: dimensions.height,
-        });
-
-        if (prediction.status === "succeeded" && prediction.output?.[0]) {
-          // Download and upload to our storage
-          const imageUrl = await downloadAndUploadImage(prediction.output[0]);
-
-          const updated = await ctx.db.generation.update({
-            where: { id: generation.id },
-            data: {
-              status: "COMPLETED",
-              imageUrl: imageUrl || null,
-              replicateId: prediction.id,
-            },
-          });
-
-          return updated;
-        } else {
-          throw new Error(prediction.error || "Generation failed");
-        }
-      } catch (error) {
-        await ctx.db.generation.update({
-          where: { id: generation.id },
-          data: { status: "FAILED" },
-        });
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "Generation failed",
-        });
-      }
     }),
 });

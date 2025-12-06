@@ -1,9 +1,15 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Loader2, ImageIcon, Trash2 } from "lucide-react";
-import { createShapeId, type Editor, type TLAssetId, type TLShapeId } from "tldraw";
+import {
+  createShapeId,
+  type Editor,
+  type TLAssetId,
+  type TLShapeId,
+} from "tldraw";
 import type { Generation } from "@prisma/client";
 import Image from "next/image";
 import { api } from "@/trpc/react";
@@ -27,6 +33,50 @@ export function GenerationsPanel({
     { projectId },
     { enabled: !!projectId },
   );
+
+  const pendingGenerations = generations.filter(
+    (g) => g.status === "PENDING" || g.status === "PROCESSING",
+  );
+
+  // Poll status for pending generations
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Clear existing interval
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+
+    // Only poll if there are pending generations
+    if (pendingGenerations.length === 0) return;
+
+    const pollPendingGenerations = async () => {
+      for (const generation of pendingGenerations) {
+        try {
+          await utils.generation.getStatus.fetch({
+            generationId: generation.id,
+          });
+        } catch (error) {
+          console.error("Error polling generation status:", error);
+        }
+      }
+      // Invalidate list to refresh with updated statuses
+      void utils.generation.list.invalidate({ projectId });
+    };
+
+    // Poll immediately, then every 2 seconds
+    void pollPendingGenerations();
+    pollingRef.current = setInterval(() => {
+      void pollPendingGenerations();
+    }, 2000);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, [pendingGenerations.length, projectId, utils]);
 
   const deleteGeneration = api.generation.delete.useMutation({
     onSuccess: () => {
@@ -69,7 +119,7 @@ export function GenerationsPanel({
             src: generation.imageUrl,
             w: generation.width,
             h: generation.height,
-            mimeType: "image/webp",
+            mimeType: "image/jpg",
             isAnimated: false,
           },
           meta: {},
@@ -154,10 +204,7 @@ export function GenerationsPanel({
   };
 
   const completedGenerations = generations.filter(
-    (g) => g.status === "COMPLETED" && g.imageUrl,
-  );
-  const pendingGenerations = generations.filter(
-    (g) => g.status === "PENDING" || g.status === "PROCESSING",
+    (g) => g.status === "COMPLETED" || g.status === "FAILED",
   );
 
   return (
@@ -177,7 +224,7 @@ export function GenerationsPanel({
               key={generation.id}
               className="bg-muted animate-pulse rounded-lg p-4"
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex aspect-square items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-muted-foreground text-sm">
                   Generating...

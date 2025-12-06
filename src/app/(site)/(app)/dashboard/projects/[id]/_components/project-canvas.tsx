@@ -6,6 +6,7 @@ import {
   DefaultStylePanel,
   DefaultStylePanelContent,
   DefaultFontStyle,
+  FrameShapeUtil,
   type Editor,
   type TLShapeId,
   type StoreSnapshot,
@@ -18,6 +19,14 @@ import {
 import "tldraw/tldraw.css";
 import { api } from "@/trpc/react";
 import type { SaveStatus } from "./project-header";
+
+// Custom FrameShapeUtil that prevents resizing (hides resize handles)
+class LockedFrameShapeUtil extends FrameShapeUtil {
+  override canResize = () => false;
+}
+
+// Register the custom shape utils
+const customShapeUtils = [LockedFrameShapeUtil];
 
 interface ProjectCanvasProps {
   projectId: string;
@@ -208,6 +217,7 @@ export function ProjectCanvas({
         licenseKey="tldraw-2026-03-14/WyJUWlhfdlRCZCIsWyIqIl0sMTYsIjIwMjYtMDMtMTQiXQ.hYq9Rva6LHHniBX2XLwl//6NTQtiZutQR39uNRHfwSVvpudnHl6HosiZoA7gAwShslzMJeojyvRpsLbAAZgCoA"
         onMount={handleMount}
         assets={assetStore}
+        shapeUtils={customShapeUtils}
         components={{
           StylePanel: CollapsibleStylePanel,
         }}

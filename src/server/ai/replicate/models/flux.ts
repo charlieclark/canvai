@@ -14,7 +14,7 @@ export const fluxSchnell: ImageModelConfig<ImageGenerationInput> = {
     ...(input.width && { width: input.width }),
     ...(input.height && { height: input.height }),
     num_outputs: input.numOutputs ?? 1,
-    output_format: input.outputFormat ?? "webp",
+    output_format: input.outputFormat ?? "jpg",
     output_quality: 90,
   }),
 };
@@ -33,7 +33,7 @@ export const fluxDev: ImageModelConfig<ImageGenerationInput> = {
     ...(input.width && { width: input.width }),
     ...(input.height && { height: input.height }),
     num_outputs: input.numOutputs ?? 1,
-    output_format: input.outputFormat ?? "webp",
+    output_format: input.outputFormat ?? "jpg",
     output_quality: 90,
     guidance: 3.5,
     num_inference_steps: 28,
@@ -52,7 +52,7 @@ export const fluxPro: ImageModelConfig<ImageGenerationInput> = {
     prompt: input.prompt,
     ...(input.width && { width: input.width }),
     ...(input.height && { height: input.height }),
-    output_format: input.outputFormat ?? "webp",
+    output_format: input.outputFormat ?? "jpg",
     safety_tolerance: 2,
   }),
 };

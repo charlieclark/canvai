@@ -24,7 +24,7 @@ export interface ImageGenerationInput extends ModelInput {
 export interface Prediction {
   id: string;
   status: "starting" | "processing" | "succeeded" | "failed" | "canceled";
-  output?: string[];
+  output?: string[] | string;
   error?: string;
 }
 

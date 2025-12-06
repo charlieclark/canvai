@@ -8,7 +8,7 @@
  */
 
 export * from "./flux";
+export * from "./google";
 
-// Re-export for convenience
-export { fluxSchnell as defaultModel } from "./flux";
+
 

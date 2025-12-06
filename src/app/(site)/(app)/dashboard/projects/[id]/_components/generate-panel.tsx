@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -11,48 +12,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Frame, Loader2, Plus } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
-import { FramePreview } from "./frame-preview";
+import { uploadImage } from "@/lib/utils/upload";
+import {
+  ASPECT_RATIOS,
+  detectAspectRatio,
+  type AspectRatio,
+} from "@/lib/utils/image";
 
 // Scale factor for displaying frames at a reasonable size on canvas
 const FRAME_DISPLAY_SCALE = 1;
-
-const ASPECT_RATIOS = [
-  { value: "1:1", label: "1:1 (Square)", width: 1024, height: 1024 },
-  { value: "16:9", label: "16:9 (Landscape)", width: 1344, height: 768 },
-  { value: "9:16", label: "9:16 (Portrait)", width: 768, height: 1344 },
-  { value: "4:3", label: "4:3 (Standard)", width: 1152, height: 896 },
-  { value: "3:2", label: "3:2 (Photo)", width: 1216, height: 832 },
-] as const;
-
-type AspectRatio = (typeof ASPECT_RATIOS)[number]["value"];
-
-// Find the closest matching aspect ratio for given dimensions
-function detectAspectRatio(width: number, height: number): AspectRatio {
-  const frameRatio = width / height;
-
-  let closest: AspectRatio = "1:1";
-  let smallestDiff = Infinity;
-
-  for (const ratio of ASPECT_RATIOS) {
-    const targetRatio = ratio.width / ratio.height;
-    const diff = Math.abs(frameRatio - targetRatio);
-    if (diff < smallestDiff) {
-      smallestDiff = diff;
-      closest = ratio.value;
-    }
-  }
-
-  return closest;
-}
 
 interface GeneratePanelProps {
   projectId: string;
   editor: Editor | null;
   selectedFrameId: TLShapeId | null;
+}
+
+interface ConfirmModalData {
+  previewUrl: string;
+  aspectRatio: AspectRatio;
 }
 
 export function GeneratePanel({
@@ -64,7 +54,9 @@ export function GeneratePanel({
   const [newFrameAspectRatio, setNewFrameAspectRatio] =
     useState<AspectRatio>("1:1");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [framePreviewUrl, setFramePreviewUrl] = useState<string | null>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmModalData, setConfirmModalData] =
+    useState<ConfirmModalData | null>(null);
 
   const utils = api.useUtils();
 
@@ -144,11 +136,19 @@ export function GeneratePanel({
     editor.zoomToSelection({ animation: { duration: 200 } });
   };
 
-  const generateMutation = api.generation.generateSync.useMutation({
+  const generateMutation = api.generation.create.useMutation({
     onSuccess: () => {
+      // Invalidate list to show the new pending generation
+      void utils.generation.list.invalidate({ projectId });
       void utils.project.getById.invalidate({ id: projectId });
       setPrompt("");
       setIsGenerating(false);
+      setConfirmModalOpen(false);
+      // Cleanup the preview URL
+      if (confirmModalData?.previewUrl) {
+        URL.revokeObjectURL(confirmModalData.previewUrl);
+      }
+      setConfirmModalData(null);
     },
     onError: (error) => {
       console.error("Generation failed:", error);
@@ -156,86 +156,88 @@ export function GeneratePanel({
     },
   });
 
-  // Export frame as image when selected
-  const exportFrameAsImage = useCallback(async () => {
-    if (!editor || !selectedFrameId) {
-      setFramePreviewUrl(null);
-      return;
-    }
+  // Export frame as image for preview
+  const exportFrameAsImage = useCallback(async (): Promise<{
+    previewUrl: string;
+    aspectRatio: AspectRatio;
+  } | null> => {
+    if (!editor || !selectedFrameId) return null;
 
     try {
       const shape = editor.getShape(selectedFrameId);
-      if (shape?.type !== "frame") {
-        setFramePreviewUrl(null);
-        return;
-      }
+      if (shape?.type !== "frame") return null;
+
+      const bounds = editor.getShapeGeometry(shape).bounds;
+      const detectedAspectRatio = detectAspectRatio(
+        bounds.width,
+        bounds.height,
+      );
 
       // Export the frame and its contents as an image
       const { blob } = await editor.toImage([selectedFrameId], {
-        format: "png",
+        format: "webp",
         background: true,
+        quality: 100,
       });
 
       const url = URL.createObjectURL(blob);
-      setFramePreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return url;
-      });
+      return { previewUrl: url, aspectRatio: detectedAspectRatio };
     } catch (error) {
       console.error("Failed to export frame:", error);
-      setFramePreviewUrl(null);
+      return null;
     }
   }, [editor, selectedFrameId]);
 
-  // Update preview when frame selection changes
-  useEffect(() => {
-    void exportFrameAsImage();
-  }, [exportFrameAsImage]);
-
-  // Cleanup blob URL on unmount
-  useEffect(() => {
-    return () => {
-      if (framePreviewUrl) {
-        URL.revokeObjectURL(framePreviewUrl);
-      }
-    };
-  }, [framePreviewUrl]);
-
-  const handleGenerate = async () => {
+  // Show confirmation modal with preview
+  const handleGenerateClick = async () => {
     if (!prompt.trim() || !editor || !selectedFrameId) return;
 
-    // Get the frame dimensions to detect aspect ratio
-    const shape = editor.getShape(selectedFrameId);
-    if (shape?.type !== "frame") return;
+    const data = await exportFrameAsImage();
+    if (data) {
+      setConfirmModalData(data);
+      setConfirmModalOpen(true);
+    }
+  };
 
-    const bounds = editor.getShapeGeometry(shape).bounds;
-    const detectedAspectRatio = detectAspectRatio(bounds.width, bounds.height);
+  // Actually run the generation
+  const handleConfirmGenerate = async () => {
+    if (!confirmModalData) return;
 
     setIsGenerating(true);
 
-    // Get the reference image from the frame
-    let referenceImage: string | undefined;
-    if (framePreviewUrl) {
-      try {
-        // Convert blob URL to base64 data URL
-        const response = await fetch(framePreviewUrl);
-        const blob = await response.blob();
-        const reader = new FileReader();
-        referenceImage = await new Promise((resolve) => {
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-      } catch (error) {
-        console.error("Failed to convert frame to base64:", error);
-      }
-    }
+    // Upload the reference image
 
-    generateMutation.mutate({
-      projectId,
-      prompt: prompt.trim(),
-      aspectRatio: detectedAspectRatio,
-      referenceImage,
-    });
+    try {
+      const response = await fetch(confirmModalData.previewUrl);
+
+      const blob = await response.blob();
+
+      const file = new File([blob], `frame-${Date.now()}.png`, {
+        type: "image/webp",
+      });
+
+      const referenceImage = await uploadImage(file);
+
+      generateMutation.mutate({
+        projectId,
+        prompt: prompt.trim(),
+        aspectRatio: confirmModalData.aspectRatio,
+        referenceImage,
+      });
+    } catch (error) {
+      console.error("Failed to upload frame image:", error);
+    }
+  };
+
+  // Cleanup preview URL when modal closes without generating
+  const handleModalClose = (open: boolean) => {
+    if (!open && !isGenerating) {
+      if (confirmModalData?.previewUrl) {
+        URL.revokeObjectURL(confirmModalData.previewUrl);
+      }
+      setConfirmModalData(null);
+    }
+    setConfirmModalOpen(open);
   };
 
   // Empty state - no frame selected
@@ -293,61 +295,6 @@ export function GeneratePanel({
               <Plus className="mr-2 h-4 w-4" />
               Create Frame
             </Button>
-
-            {/* List of existing frames */}
-            {editor &&
-              (() => {
-                const existingFrames = editor
-                  .getCurrentPageShapes()
-                  .filter((shape) => shape.type === "frame");
-
-                if (existingFrames.length === 0) return null;
-
-                return (
-                  <div className="mt-6 space-y-2">
-                    <Label className="text-muted-foreground text-xs tracking-wide uppercase">
-                      Existing Frames
-                    </Label>
-                    <div className="space-y-1">
-                      {existingFrames.map((frame) => {
-                        const bounds = editor.getShapeGeometry(frame).bounds;
-                        const ratio = detectAspectRatio(
-                          bounds.width,
-                          bounds.height,
-                        );
-                        const ratioInfo = ASPECT_RATIOS.find(
-                          (r) => r.value === ratio,
-                        );
-                        const frameName =
-                          (frame.props as { name?: string }).name || "Frame";
-
-                        return (
-                          <button
-                            key={frame.id}
-                            onClick={() => {
-                              editor.select(frame.id);
-                              editor.zoomToSelection({
-                                animation: { duration: 200 },
-                              });
-                            }}
-                            className="hover:bg-muted flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors"
-                          >
-                            <Frame className="text-muted-foreground h-4 w-4 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate text-sm font-medium">
-                                {frameName}
-                              </div>
-                              <div className="text-muted-foreground text-xs">
-                                {ratioInfo?.width}×{ratioInfo?.height}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
           </div>
         </div>
       </div>
@@ -368,69 +315,105 @@ export function GeneratePanel({
   const frameInfo = getFrameInfo();
 
   return (
-    <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
-      <div className="border-b p-4">
-        <h2 className="font-semibold">Generate</h2>
-        <p className="text-muted-foreground text-xs">
-          Frame selected - ready to generate
-        </p>
+    <>
+      <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
+        <div className="border-b p-4">
+          <h2 className="font-semibold">Generate</h2>
+          {frameInfo && (
+            <p className="text-muted-foreground text-xs">
+              {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
+            </p>
+          )}
+        </div>
+
+        <ScrollArea className="flex-1">
+          <div className="space-y-6 p-4">
+            {/* Prompt */}
+            <div className="space-y-2">
+              <Label htmlFor="prompt">Prompt</Label>
+              <Textarea
+                id="prompt"
+                placeholder="Describe what you want to generate..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-muted-foreground text-xs">
+                The frame contents will be used as a reference for the
+                generation.
+              </p>
+            </div>
+
+            {/* Generate Button */}
+            <Button
+              onClick={handleGenerateClick}
+              disabled={!prompt.trim() || isGenerating}
+              className="w-full"
+              size="lg"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate
+            </Button>
+          </div>
+        </ScrollArea>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="space-y-6 p-4">
-          {/* Frame Preview */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Frame Preview</Label>
-              {frameInfo && (
-                <span className="text-muted-foreground text-xs">
-                  {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
-                </span>
-              )}
+      {/* Confirmation Modal */}
+      <Dialog open={confirmModalOpen} onOpenChange={handleModalClose}>
+        <DialogContent className="z-[100000000] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Generation</DialogTitle>
+            <DialogDescription>
+              Review the frame that will be used as a reference for your
+              generation.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Preview Image */}
+          {confirmModalData && (
+            <div className="bg-muted relative aspect-square w-full overflow-hidden rounded-lg border">
+              <Image
+                src={confirmModalData.previewUrl}
+                alt="Frame preview"
+                fill
+                className="object-contain"
+              />
             </div>
-            <FramePreview
-              previewUrl={framePreviewUrl}
-              onRefresh={exportFrameAsImage}
-            />
-          </div>
+          )}
 
-          {/* Prompt */}
-          <div className="space-y-2">
-            <Label htmlFor="prompt">Prompt</Label>
-            <Textarea
-              id="prompt"
-              placeholder="Describe what you want to generate..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-muted-foreground text-xs">
-              The frame contents will be used as a reference for the generation.
+          {/* Prompt Preview */}
+          <div className="space-y-1">
+            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Prompt
             </p>
+            <p className="text-sm">{prompt}</p>
           </div>
 
-          {/* Generate Button */}
-          <Button
-            onClick={handleGenerate}
-            disabled={!prompt.trim() || isGenerating}
-            className="w-full"
-            size="lg"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Generate
-              </>
-            )}
-          </Button>
-        </div>
-      </ScrollArea>
-    </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => handleModalClose(false)}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmGenerate} disabled={isGenerating}>
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
