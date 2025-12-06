@@ -4,17 +4,17 @@ import { TRPCError } from "@trpc/server";
 import {
   startGeneration,
   getPrediction,
-  runGeneration,
-  fluxSchnell,
-  fluxDev,
   nanoBananaPro,
+  imagenFast,
 } from "@/server/ai/replicate";
 import { downloadAndUploadImage } from "@/server/utils/upload";
 import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
 import { isArray } from "lodash";
 
-// The model to use for generation - easy to swap out
-const imageModel = nanoBananaPro;
+// The model to use for frame generation - easy to swap out
+const frameModel = nanoBananaPro;
+// The model to use for asset generation (FLUX Schnell - fast)
+const assetModel = imagenFast;
 
 // Build schema and dimensions map from shared ASPECT_RATIOS constant
 const aspectRatioValues = ASPECT_RATIOS.map((r) => r.value) as [
@@ -32,7 +32,7 @@ const ASPECT_RATIO_DIMENSIONS: Record<
 
 export const generationRouter = createTRPCRouter({
   /**
-   * Start a new generation
+   * Start a new frame generation
    * Accepts a frame export as a reference image (base64 data URL)
    */
   create: protectedProcedure
@@ -76,12 +76,13 @@ export const generationRouter = createTRPCRouter({
           width: dimensions.width,
           height: dimensions.height,
           status: "PENDING",
+          type: "FRAME",
         },
       });
 
       try {
         // Start image generation
-        const prediction = await startGeneration(imageModel, {
+        const prediction = await startGeneration(frameModel, {
           prompt: input.prompt,
           referenceImage: input.referenceImage,
           width: dimensions.width,
@@ -107,6 +108,85 @@ export const generationRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to start generation",
+        });
+      }
+    }),
+
+  /**
+   * Start a new asset generation
+   * Assets are standalone images (e.g., characters, objects) without reference images
+   */
+  createAsset: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        prompt: z.string().min(1).max(2000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify project ownership
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+        select: { userId: true },
+      });
+
+      if (!project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      if (project.userId !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this project",
+        });
+      }
+
+      // Assets are always 1:1 square
+      const dimensions = ASPECT_RATIO_DIMENSIONS["1:1"];
+
+      // Create generation record
+      const generation = await ctx.db.generation.create({
+        data: {
+          projectId: input.projectId,
+          prompt: input.prompt,
+          aspectRatio: "1:1",
+          width: dimensions.width,
+          height: dimensions.height,
+          status: "PENDING",
+          type: "ASSET",
+        },
+      });
+
+      try {
+        // Start image generation with Imagen 4 Fast
+        const prediction = await startGeneration(assetModel, {
+          prompt: input.prompt,
+          width: dimensions.width,
+          height: dimensions.height,
+        });
+
+        // Update with replicate ID
+        await ctx.db.generation.update({
+          where: { id: generation.id },
+          data: {
+            replicateId: prediction.id,
+            status: "PROCESSING",
+          },
+        });
+
+        return { generationId: generation.id, replicateId: prediction.id };
+      } catch {
+        // Mark as failed if we couldn't start
+        await ctx.db.generation.update({
+          where: { id: generation.id },
+          data: { status: "FAILED" },
+        });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to start asset generation",
         });
       }
     }),

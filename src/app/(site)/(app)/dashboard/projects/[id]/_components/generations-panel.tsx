@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Loader2, ImageIcon, Trash2 } from "lucide-react";
@@ -14,6 +14,49 @@ import type { Generation } from "@prisma/client";
 import Image from "next/image";
 import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
+
+/**
+ * Component that polls a single pending generation until complete
+ */
+function PendingGeneration({
+  generation,
+  projectId,
+}: {
+  generation: Generation;
+  projectId: string;
+}) {
+  const utils = api.useUtils();
+
+  const { data } = api.generation.getStatus.useQuery(
+    { generationId: generation.id },
+    {
+      // Poll every 2 seconds while still pending
+      refetchInterval: (query) => {
+        const status = query.state.data?.status;
+        if (status === "COMPLETED" || status === "FAILED") {
+          return false;
+        }
+        return 2000;
+      },
+    },
+  );
+
+  // When status changes to completed/failed, invalidate the list
+  useEffect(() => {
+    if (data?.status === "COMPLETED" || data?.status === "FAILED") {
+      void utils.generation.list.invalidate({ projectId });
+    }
+  }, [data?.status, projectId, utils]);
+
+  return (
+    <div className="bg-muted animate-pulse rounded-lg p-4">
+      <div className="flex aspect-square items-center justify-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-muted-foreground text-sm">Generating...</span>
+      </div>
+    </div>
+  );
+}
 
 interface GenerationsPanelProps {
   projectId: string;
@@ -37,46 +80,6 @@ export function GenerationsPanel({
   const pendingGenerations = generations.filter(
     (g) => g.status === "PENDING" || g.status === "PROCESSING",
   );
-
-  // Poll status for pending generations
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    // Clear existing interval
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-
-    // Only poll if there are pending generations
-    if (pendingGenerations.length === 0) return;
-
-    const pollPendingGenerations = async () => {
-      for (const generation of pendingGenerations) {
-        try {
-          await utils.generation.getStatus.fetch({
-            generationId: generation.id,
-          });
-        } catch (error) {
-          console.error("Error polling generation status:", error);
-        }
-      }
-      // Invalidate list to refresh with updated statuses
-      void utils.generation.list.invalidate({ projectId });
-    };
-
-    // Poll immediately, then every 2 seconds
-    void pollPendingGenerations();
-    pollingRef.current = setInterval(() => {
-      void pollPendingGenerations();
-    }, 2000);
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
-    };
-  }, [pendingGenerations.length, projectId, utils]);
 
   const deleteGeneration = api.generation.delete.useMutation({
     onSuccess: () => {
@@ -218,19 +221,13 @@ export function GenerationsPanel({
 
       <ScrollArea className="flex-1">
         <div className="space-y-3 p-4">
-          {/* Pending generations */}
+          {/* Pending generations - each polls its own status */}
           {pendingGenerations.map((generation) => (
-            <div
+            <PendingGeneration
               key={generation.id}
-              className="bg-muted animate-pulse rounded-lg p-4"
-            >
-              <div className="flex aspect-square items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-muted-foreground text-sm">
-                  Generating...
-                </span>
-              </div>
-            </div>
+              generation={generation}
+              projectId={projectId}
+            />
           ))}
 
           {/* Completed generations */}

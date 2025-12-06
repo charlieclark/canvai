@@ -22,6 +22,7 @@ model Generation {
   width       Int
   height      Int
   status      GenerationStatus @default(PENDING)
+  type        GenerationType   @default(FRAME)
   replicateId String?          // For polling status
 
   @@index([projectId])
@@ -32,6 +33,11 @@ enum GenerationStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum GenerationType {
+  FRAME
+  ASSET
 }
 
 

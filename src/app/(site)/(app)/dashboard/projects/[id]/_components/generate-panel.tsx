@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Frame, Loader2, Plus } from "lucide-react";
+import { Sparkles, Frame, Loader2, Plus, ImageIcon } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import { uploadImage } from "@/lib/utils/upload";
@@ -57,6 +57,11 @@ export function GeneratePanel({
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmModalData, setConfirmModalData] =
     useState<ConfirmModalData | null>(null);
+
+  // Asset generation state
+  const [assetModalOpen, setAssetModalOpen] = useState(false);
+  const [assetPrompt, setAssetPrompt] = useState("");
+  const [isGeneratingAsset, setIsGeneratingAsset] = useState(false);
 
   const utils = api.useUtils();
 
@@ -155,6 +160,40 @@ export function GeneratePanel({
       setIsGenerating(false);
     },
   });
+
+  const generateAssetMutation = api.generation.createAsset.useMutation({
+    onSuccess: () => {
+      // Invalidate list to show the new pending generation
+      void utils.generation.list.invalidate({ projectId });
+      void utils.project.getById.invalidate({ id: projectId });
+      setAssetPrompt("");
+      setIsGeneratingAsset(false);
+      setAssetModalOpen(false);
+    },
+    onError: (error) => {
+      console.error("Asset generation failed:", error);
+      setIsGeneratingAsset(false);
+    },
+  });
+
+  // Handle asset generation
+  const handleGenerateAsset = () => {
+    if (!assetPrompt.trim()) return;
+
+    setIsGeneratingAsset(true);
+    generateAssetMutation.mutate({
+      projectId,
+      prompt: assetPrompt.trim(),
+    });
+  };
+
+  // Handle asset modal close
+  const handleAssetModalClose = (open: boolean) => {
+    if (!open && !isGeneratingAsset) {
+      setAssetPrompt("");
+    }
+    setAssetModalOpen(open);
+  };
 
   // Export frame as image for preview
   const exportFrameAsImage = useCallback(async (): Promise<{
@@ -295,8 +334,73 @@ export function GeneratePanel({
               <Plus className="mr-2 h-4 w-4" />
               Create Frame
             </Button>
+
+            <Button
+              onClick={() => setAssetModalOpen(true)}
+              variant="outline"
+              className="w-full"
+            >
+              <ImageIcon className="mr-2 h-4 w-4" />
+              Generate Asset
+            </Button>
           </div>
         </div>
+
+        {/* Asset Generation Modal */}
+        <Dialog open={assetModalOpen} onOpenChange={handleAssetModalClose}>
+          <DialogContent className="z-[100000000] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Generate Asset</DialogTitle>
+              <DialogDescription>
+                Create a standalone image asset that can be composited within
+                frames.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="asset-prompt">Prompt</Label>
+                <Textarea
+                  id="asset-prompt"
+                  placeholder="Describe the asset you want to generate..."
+                  value={assetPrompt}
+                  onChange={(e) => setAssetPrompt(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                />
+                <p className="text-muted-foreground text-xs">
+                  Assets are generated as 1:1 square images using FLUX Schnell.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => handleAssetModalClose(false)}
+                disabled={isGeneratingAsset}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerateAsset}
+                disabled={!assetPrompt.trim() || isGeneratingAsset}
+              >
+                {isGeneratingAsset ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate Asset
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -355,6 +459,16 @@ export function GeneratePanel({
               <Sparkles className="mr-2 h-4 w-4" />
               Generate
             </Button>
+
+            {/* Asset Generation Button */}
+            <Button
+              onClick={() => setAssetModalOpen(true)}
+              variant="outline"
+              className="w-full"
+            >
+              <ImageIcon className="mr-2 h-4 w-4" />
+              Generate Asset
+            </Button>
           </div>
         </ScrollArea>
       </div>
@@ -408,6 +522,62 @@ export function GeneratePanel({
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
                   Generate
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Asset Generation Modal */}
+      <Dialog open={assetModalOpen} onOpenChange={handleAssetModalClose}>
+        <DialogContent className="z-[100000000] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate Asset</DialogTitle>
+            <DialogDescription>
+              Create a standalone image asset that can be composited within
+              frames.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="asset-prompt-frame">Prompt</Label>
+              <Textarea
+                id="asset-prompt-frame"
+                placeholder="Describe the asset you want to generate..."
+                value={assetPrompt}
+                onChange={(e) => setAssetPrompt(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-muted-foreground text-xs">
+                Assets are generated as 1:1 square images using FLUX Schnell.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => handleAssetModalClose(false)}
+              disabled={isGeneratingAsset}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerateAsset}
+              disabled={!assetPrompt.trim() || isGeneratingAsset}
+            >
+              {isGeneratingAsset ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Asset
                 </>
               )}
             </Button>
