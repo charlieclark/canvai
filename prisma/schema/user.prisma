@@ -5,6 +5,9 @@ model User {
   email     String
   role      Role     @default(MEMBER)
 
+  // API Keys
+  replicateApiKey String? // User's personal Replicate API token
+
   // Relations
   queuedEmails QueuedEmail[]
   projects     Project[]

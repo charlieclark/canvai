@@ -1,21 +1,25 @@
 import Replicate from "replicate";
-import { env } from "@/env";
 import type { ImageModelConfig, ModelInput, Prediction } from "./types";
 
 /**
- * Replicate API client singleton
+ * Create a Replicate client with the given API token
  */
-export const replicate = new Replicate({
-  auth: env.REPLICATE_API_TOKEN,
-});
+export function createReplicateClient(apiToken: string): Replicate {
+  return new Replicate({
+    auth: apiToken,
+  });
+}
 
 /**
  * Start an image generation using the specified model configuration
+ * Requires an API token to be passed
  */
 export async function startGeneration<T extends ModelInput>(
   model: ImageModelConfig<T>,
   input: T,
+  apiToken: string,
 ): Promise<Prediction> {
+  const replicate = createReplicateClient(apiToken);
   const replicateInput = model.mapInput(input);
 
   const prediction = await replicate.predictions.create({
@@ -33,8 +37,13 @@ export async function startGeneration<T extends ModelInput>(
 
 /**
  * Get the status of a prediction by ID
+ * Requires an API token to be passed
  */
-export async function getPrediction(id: string): Promise<Prediction> {
+export async function getPrediction(
+  id: string,
+  apiToken: string,
+): Promise<Prediction> {
+  const replicate = createReplicateClient(apiToken);
   const prediction = await replicate.predictions.get(id);
 
   return {
@@ -47,16 +56,18 @@ export async function getPrediction(id: string): Promise<Prediction> {
 
 /**
  * Wait for a prediction to complete (with timeout)
+ * Requires an API token to be passed
  */
 export async function waitForPrediction(
   id: string,
+  apiToken: string,
   maxWaitMs = 120000,
   pollIntervalMs = 1000,
 ): Promise<Prediction> {
   const startTime = Date.now();
 
   while (Date.now() - startTime < maxWaitMs) {
-    const prediction = await getPrediction(id);
+    const prediction = await getPrediction(id, apiToken);
 
     if (
       prediction.status === "succeeded" ||
@@ -74,12 +85,14 @@ export async function waitForPrediction(
 
 /**
  * Run a synchronous generation (start + wait for completion)
+ * Requires an API token to be passed
  */
 export async function runGeneration<T extends ModelInput>(
   model: ImageModelConfig<T>,
   input: T,
+  apiToken: string,
 ): Promise<Prediction> {
-  const prediction = await startGeneration(model, input);
-  return waitForPrediction(prediction.id);
+  const prediction = await startGeneration(model, input, apiToken);
+  return waitForPrediction(prediction.id, apiToken);
 }
 

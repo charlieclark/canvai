@@ -11,6 +11,21 @@ import { downloadAndUploadImage } from "@/server/utils/upload";
 import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
 import { isArray } from "lodash";
 
+/**
+ * Helper to get the user's Replicate API key
+ * Throws an error if no key is configured
+ */
+function requireReplicateApiKey(
+  replicateApiKey: string | null,
+): asserts replicateApiKey is string {
+  if (!replicateApiKey) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "REPLICATE_KEY_REQUIRED",
+    });
+  }
+}
+
 // The model to use for frame generation - easy to swap out
 const frameModel = nanoBananaPro;
 // The model to use for asset generation (FLUX Schnell - fast)
@@ -45,6 +60,9 @@ export const generationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Check for Replicate API key
+      requireReplicateApiKey(ctx.user.replicateApiKey);
+
       // Verify project ownership
       const project = await ctx.db.project.findUnique({
         where: { id: input.projectId },
@@ -81,13 +99,17 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start image generation
-        const prediction = await startGeneration(frameModel, {
-          prompt: input.prompt,
-          referenceImage: input.referenceImage,
-          width: dimensions.width,
-          height: dimensions.height,
-        });
+        // Start image generation with user's API key
+        const prediction = await startGeneration(
+          frameModel,
+          {
+            prompt: input.prompt,
+            referenceImage: input.referenceImage,
+            width: dimensions.width,
+            height: dimensions.height,
+          },
+          ctx.user.replicateApiKey,
+        );
 
         // Update with replicate ID
         await ctx.db.generation.update({
@@ -124,6 +146,9 @@ export const generationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Check for Replicate API key
+      requireReplicateApiKey(ctx.user.replicateApiKey);
+
       // Verify project ownership
       const project = await ctx.db.project.findUnique({
         where: { id: input.projectId },
@@ -161,12 +186,16 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start image generation with Imagen 4 Fast
-        const prediction = await startGeneration(assetModel, {
-          prompt: input.prompt,
-          width: dimensions.width,
-          height: dimensions.height,
-        });
+        // Start image generation with Imagen 4 Fast using user's API key
+        const prediction = await startGeneration(
+          assetModel,
+          {
+            prompt: input.prompt,
+            width: dimensions.width,
+            height: dimensions.height,
+          },
+          ctx.user.replicateApiKey,
+        );
 
         // Update with replicate ID
         await ctx.db.generation.update({
@@ -197,6 +226,9 @@ export const generationRouter = createTRPCRouter({
   getStatus: protectedProcedure
     .input(z.object({ generationId: z.string() }))
     .query(async ({ ctx, input }) => {
+      // Check for Replicate API key (needed for polling)
+      requireReplicateApiKey(ctx.user.replicateApiKey);
+
       const generation = await ctx.db.generation.findUnique({
         where: { id: input.generationId },
         include: {
@@ -228,7 +260,10 @@ export const generationRouter = createTRPCRouter({
       // Poll Replicate if we have an ID
       if (generation.replicateId) {
         try {
-          const prediction = await getPrediction(generation.replicateId);
+          const prediction = await getPrediction(
+            generation.replicateId,
+            ctx.user.replicateApiKey,
+          );
 
           const output = isArray(prediction.output)
             ? prediction.output[0]

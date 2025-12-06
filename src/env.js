@@ -15,7 +15,7 @@ export const env = createEnv({
     BLOB_READ_WRITE_TOKEN: z.string(),
     RESEND_API_KEY: z.string(),
     OPENAI_API_KEY: z.string(),
-    REPLICATE_API_TOKEN: z.string(),
+    REPLICATE_API_TOKEN: z.string().optional(), // Optional - users provide their own keys
     STRIPE_PRIVATE_KEY: z.string(),
     STRIPE_PRICE: z.string(),
   },

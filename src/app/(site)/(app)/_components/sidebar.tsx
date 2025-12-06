@@ -2,7 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { Folder, Menu, Rocket } from "lucide-react";
+import { Folder, Menu, Rocket, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -15,13 +15,10 @@ const navigation = [
     href: "/dashboard/projects",
     icon: Folder,
   },
-];
-
-const adminNavigation = [
   {
-    name: "Manage Waitlist",
-    href: "/dashboard/manage-waitlist",
-    icon: Rocket,
+    name: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings,
   },
 ];
 
@@ -84,7 +81,7 @@ export function AdminSidebar() {
       </div>
 
       <div className="flex-1 space-y-1 p-6">
-        {[...adminNavigation, ...navigation].map((item) => (
+        {[...navigation].map((item) => (
           <SidebarNavItem
             key={item.name}
             item={item}
