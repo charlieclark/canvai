@@ -11,7 +11,7 @@ export default function useSignupModal() {
   const router = useRouter();
 
   const openSignupModal = ({
-    redirectUrl = "/onboarding",
+    redirectUrl = "/dashboard",
     email,
   }: {
     redirectUrl?: string;
