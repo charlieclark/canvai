@@ -61,7 +61,7 @@ export function WaveTransition({
         ref={svgRef}
         viewBox={`0 0 1440 ${height}`}
         fill="none"
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMax slice"
         className="h-full w-full"
       >
         {gradients.length > 0 && (
