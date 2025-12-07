@@ -71,10 +71,10 @@ export function HeroSection() {
               onClick={() => openSignupModal()}
               className="group h-14 rounded-full bg-slate-900 px-8 text-base font-medium shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
             >
-              Start Creating Free
+              Start Creating
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            {/* <Button
+            <Button
               size="lg"
               variant="ghost"
               className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80"
@@ -84,8 +84,8 @@ export function HeroSection() {
                   ?.scrollIntoView({ behavior: "smooth" });
               }}
             >
-              See How It Works
-            </Button> */}
+              Learn More
+            </Button>
           </div>
         </div>
 
