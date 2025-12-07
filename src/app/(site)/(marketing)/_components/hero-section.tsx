@@ -77,7 +77,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="ghost"
-              className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80"
+              className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80 max-sm:hidden"
               onClick={() => {
                 document
                   .getElementById("features")
