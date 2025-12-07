@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { useBreakpoints } from "@/hooks/use-breakpoints";
 import { useInView } from "@/hooks/use-in-view";
 
 interface WaveGradient {
@@ -39,17 +40,32 @@ export function WaveTransition({
     rootMargin: "50px",
   });
   const svgRef = useRef<SVGSVGElement>(null);
+  const { isMobile } = useBreakpoints();
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
+
+  // Disable animations on mobile or when user prefers reduced motion
+  const shouldAnimate = isInView && !isMobile && !prefersReducedMotion;
 
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
 
-    if (isInView) {
+    if (shouldAnimate) {
       svg.unpauseAnimations();
     } else {
       svg.pauseAnimations();
     }
-  }, [isInView]);
+  }, [shouldAnimate]);
 
   return (
     <div
@@ -68,7 +84,7 @@ export function WaveTransition({
         fill="none"
         preserveAspectRatio="xMidYMax slice"
         className="h-full w-full"
-        style={{ willChange: isInView ? "contents" : "auto" }}
+        style={{ willChange: shouldAnimate ? "contents" : "auto" }}
       >
         {gradients.length > 0 && (
           <defs>
