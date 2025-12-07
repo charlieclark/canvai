@@ -1,58 +1,74 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "About Us | CanvAI",
-  description: "Learn more about CanvAI and our mission to bring stories to life with AI.",
+  title: "About | CanvAI",
+  description:
+    "Learn about CanvAI—the infinite canvas where rough sketches become polished AI art.",
 };
 
 export default function AboutPage() {
   return (
     <PageContainer
-      title="About Us"
-      description="Learn about our mission to make storytelling magical and accessible for everyone"
+      title="About CanvAI"
+      description="The infinite canvas where rough sketches become polished AI art"
     >
-      <h2>Our Mission</h2>
+      <h2>Our Vision</h2>
       <p>
-        At CanvAI, we're dedicated to making storytelling magical and accessible for everyone. 
-        Our platform combines the power of AI with human creativity to transform simple images and notes 
-        into beautiful, engaging storybooks that captivate readers of all ages.
+        CanvAI was born from a simple idea: what if creating AI art was as
+        natural as sketching on paper? We built an infinite canvas that bridges
+        the gap between your creative vision and AI-powered image generation.
       </p>
 
-      <h2>What We Do</h2>
+      <h2>How It Works</h2>
       <p>
-        We provide an innovative platform that allows users to create personalized storybooks in minutes. 
-        Simply upload an image, add some notes about your story, and our AI will help craft a unique 
-        narrative complete with illustrations. Whether you're a parent creating bedtime stories, 
-        a teacher making educational content, or someone who loves to tell stories, CanvAI makes 
-        it easy and fun.
+        CanvAI combines the freedom of a digital canvas with the power of
+        generative AI. Sketch rough ideas, compose frames from shapes and
+        images, then transform them into polished artwork using our fine-tuned
+        Nano Banana Pro model—all in one seamless workflow.
       </p>
-
-      <h2>Our Values</h2>
       <ul>
         <li>
-          <strong>Creativity:</strong> We believe in empowering everyone to tell their stories, 
-          no matter their writing experience.
+          <strong>Infinite Canvas:</strong> A boundless workspace where you can
+          pan, zoom, and arrange ideas without limits
         </li>
         <li>
-          <strong>Innovation:</strong> We continuously evolve our AI technology to create more 
-          engaging and personalized stories.
+          <strong>Frame Composition:</strong> Compose multiple elements into
+          frames ready for AI transformation
         </li>
         <li>
-          <strong>Accessibility:</strong> We're committed to making storytelling tools available 
-          to everyone, regardless of technical expertise.
+          <strong>Nano Banana Pro:</strong> Our fine-tuned model converts your
+          compositions into stunning visuals
         </li>
         <li>
-          <strong>Quality:</strong> We maintain high standards for our AI-generated content, 
-          ensuring every story is unique and engaging.
+          <strong>Asset Generation:</strong> Create standalone characters,
+          objects, and backgrounds to reuse across your projects
         </li>
       </ul>
 
-      <h2>Join Our Story</h2>
+      <h2>Powered by Replicate</h2>
       <p>
-        Whether you're looking to create bedtime stories for your children, educational content 
-        for your classroom, or simply want to bring your creative ideas to life, CanvAI is 
-        here to help. Join us in making storytelling more accessible and magical, one story at a time.
+        We use Replicate&apos;s infrastructure to run our AI models. You bring
+        your own Replicate API key, giving you full control over your usage and
+        costs. No subscriptions, no hidden fees—you only pay for what you
+        generate.
+      </p>
+
+      <h2>Built for Creators</h2>
+      <p>
+        Whether you&apos;re a concept artist exploring ideas, a game developer
+        creating assets, or just someone who loves to experiment with AI
+        art—CanvAI gives you the tools to move from rough sketch to polished
+        output in seconds.
+      </p>
+
+      <h2>Get in Touch</h2>
+      <p>
+        Have questions or feedback? We&apos;d love to hear from you at{" "}
+        <a href="mailto:hello@canvai.co" className="text-primary hover:underline">
+          hello@canvai.co
+        </a>
+        .
       </p>
     </PageContainer>
   );
-} 
+}

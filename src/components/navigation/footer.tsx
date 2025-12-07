@@ -38,7 +38,7 @@ export function Footer() {
               Transform your creative vision into stunning visuals with
               AI-powered generation on an infinite canvas.
             </p>
-            <div className="mt-6 flex gap-4">
+            {/* <div className="mt-6 flex gap-4">
               {socialLinks.map((link) => {
                 const Icon = iconMap[link.icon];
                 if (!Icon) return null;
@@ -55,7 +55,7 @@ export function Footer() {
                   </a>
                 );
               })}
-            </div>
+            </div> */}
           </div>
 
           {/* Product Links */}

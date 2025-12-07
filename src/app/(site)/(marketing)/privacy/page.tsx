@@ -2,81 +2,153 @@ import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
   title: "Privacy Policy | CanvAI",
-  description: "Learn about how we handle and protect your data.",
+  description: "Learn how CanvAI collects, uses, and protects your data.",
 };
 
 export default function PrivacyPage() {
   return (
     <PageContainer
       title="Privacy Policy"
-      description="We take your privacy seriously. Learn about how we collect, use, and protect your personal information."
+      description="We take your privacy seriously. Here's how we handle your data."
     >
+      <p className="text-sm text-muted-foreground">
+        Last updated: December 2024
+      </p>
+
       <h2>Information We Collect</h2>
-      <p>We collect information that you provide directly to us, including:</p>
+      <p>When you use CanvAI, we collect:</p>
+
+      <h3>Account Information</h3>
       <ul>
-        <li>Account information (name, email, password)</li>
-        <li>Profile information</li>
-        <li>Content you create and upload</li>
-        <li>Communication preferences</li>
+        <li>Email address</li>
+        <li>Name (if provided)</li>
+        <li>Profile information from authentication providers (e.g., Google)</li>
       </ul>
+
+      <h3>Content You Create</h3>
+      <ul>
+        <li>Canvas projects and compositions</li>
+        <li>Generated images</li>
+        <li>Assets you upload or create</li>
+      </ul>
+
+      <h3>Technical Information</h3>
+      <ul>
+        <li>Browser type and version</li>
+        <li>Device information</li>
+        <li>IP address</li>
+        <li>Usage patterns and interactions with the Service</li>
+      </ul>
+
+      <h3>API Keys</h3>
+      <p>
+        Your Replicate API key is stored securely and encrypted. We use it
+        solely to make API calls on your behalf for image generation. We never
+        share your API key with third parties.
+      </p>
 
       <h2>How We Use Your Information</h2>
-      <p>We use the information we collect to:</p>
+      <p>We use collected information to:</p>
       <ul>
-        <li>Provide and maintain our services</li>
-        <li>Process your transactions</li>
-        <li>Send you technical notices and updates</li>
-        <li>Respond to your comments and questions</li>
-        <li>Analyze usage patterns and improve our services</li>
+        <li>Provide and maintain the CanvAI service</li>
+        <li>Process image generation requests through Replicate</li>
+        <li>Store and sync your projects across devices</li>
+        <li>Send important service updates and notifications</li>
+        <li>Improve and optimize the Service</li>
+        <li>Respond to support requests</li>
+        <li>Detect and prevent abuse or fraud</li>
       </ul>
 
-      <h2>Information Sharing</h2>
+      <h2>Data Sharing</h2>
+      <p>We do not sell your personal information. We may share data with:</p>
+      <ul>
+        <li>
+          <strong>Replicate:</strong> Your prompts and image data are sent to
+          Replicate for AI processing, subject to their privacy policy
+        </li>
+        <li>
+          <strong>Authentication Providers:</strong> We use Clerk for secure
+          authentication
+        </li>
+        <li>
+          <strong>Hosting Providers:</strong> Our infrastructure providers
+          (Vercel, cloud storage) process data to deliver the Service
+        </li>
+        <li>
+          <strong>Legal Requirements:</strong> When required by law or to
+          protect our rights
+        </li>
+      </ul>
+
+      <h2>Data Storage and Security</h2>
       <p>
-        We do not sell, trade, or rent your personal information to third parties.
-        We may share your information in the following circumstances:
+        Your data is stored on secure servers with encryption at rest and in
+        transit. We implement industry-standard security measures to protect
+        against unauthorized access, alteration, or destruction of your data.
       </p>
-      <ul>
-        <li>With your consent</li>
-        <li>To comply with legal obligations</li>
-        <li>To protect our rights and safety</li>
-        <li>With service providers who assist in our operations</li>
-      </ul>
 
-      <h2>Data Security</h2>
+      <h2>Data Retention</h2>
       <p>
-        We implement appropriate technical and organizational measures to protect
-        your personal information against unauthorized access, alteration,
-        disclosure, or destruction.
+        We retain your data for as long as your account is active. If you delete
+        your account, we will delete your personal data within 30 days, except
+        where retention is required by law.
       </p>
 
       <h2>Your Rights</h2>
       <p>You have the right to:</p>
       <ul>
-        <li>Access your personal information</li>
-        <li>Correct inaccurate data</li>
-        <li>Request deletion of your data</li>
-        <li>Object to data processing</li>
-        <li>Export your data</li>
+        <li>
+          <strong>Access:</strong> Request a copy of your personal data
+        </li>
+        <li>
+          <strong>Correction:</strong> Update or correct inaccurate information
+        </li>
+        <li>
+          <strong>Deletion:</strong> Request deletion of your data and account
+        </li>
+        <li>
+          <strong>Export:</strong> Download your projects and generated images
+        </li>
+        <li>
+          <strong>Objection:</strong> Object to certain processing activities
+        </li>
       </ul>
-
-      <h2>Cookie Policy</h2>
       <p>
-        We use cookies and similar technologies to enhance your experience. Please
-        refer to our Cookie Policy for more information.
+        To exercise these rights, contact us at{" "}
+        <a href="mailto:hello@canvai.co" className="text-primary hover:underline">
+          hello@canvai.co
+        </a>
+        .
+      </p>
+
+      <h2>Children&apos;s Privacy</h2>
+      <p>
+        CanvAI is not intended for children under 13. We do not knowingly
+        collect personal information from children under 13. If you believe a
+        child has provided us with personal information, please contact us.
+      </p>
+
+      <h2>International Data Transfers</h2>
+      <p>
+        Your data may be processed in countries other than your own. We ensure
+        appropriate safeguards are in place for international transfers in
+        compliance with applicable data protection laws.
       </p>
 
       <h2>Changes to This Policy</h2>
       <p>
-        We may update this privacy policy from time to time. We will notify you of
-        any changes by posting the new policy on this page and updating the
-        effective date.
+        We may update this Privacy Policy from time to time. We will notify you
+        of significant changes via email or through the Service.
       </p>
 
       <h2>Contact Us</h2>
       <p>
-        If you have any questions about this Privacy Policy, please contact us
-        through our contact page.
+        For privacy-related questions or concerns, contact us at{" "}
+        <a href="mailto:hello@canvai.co" className="text-primary hover:underline">
+          hello@canvai.co
+        </a>
+        .
       </p>
     </PageContainer>
   );
-} 
+}

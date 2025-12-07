@@ -9,116 +9,151 @@ export default function TermsPage() {
   return (
     <PageContainer
       title="Terms of Service"
-      description="Please read these terms carefully before using our service."
+      description="Please read these terms carefully before using CanvAI."
     >
+      <p className="text-sm text-muted-foreground">
+        Last updated: December 2024
+      </p>
+
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing and using CanvAI, you accept and agree to be bound by the
-        terms and provision of this agreement.
+        By accessing and using CanvAI (&quot;the Service&quot;), you accept and
+        agree to be bound by these Terms of Service. If you do not agree to
+        these terms, please do not use our Service.
       </p>
 
       <h2>2. Description of Service</h2>
       <p>
-        CanvAI provides a platform for creating and managing web pages. We reserve
-        the right to modify, suspend, or discontinue the service at any time
-        without notice.
+        CanvAI provides an infinite canvas workspace for creating AI-generated
+        artwork. Users can sketch, compose frames, and generate images using
+        AI models powered by Replicate. The Service requires users to provide
+        their own Replicate API key for image generation.
       </p>
 
-      <h2>3. User Responsibilities</h2>
-      <p>You agree to:</p>
+      <h2>3. User Accounts</h2>
+      <p>To use CanvAI, you must:</p>
       <ul>
-        <li>Provide accurate and complete information</li>
-        <li>Maintain the security of your account</li>
-        <li>Comply with all applicable laws and regulations</li>
-        <li>Not use the service for any illegal or unauthorized purpose</li>
+        <li>Create an account with accurate and complete information</li>
+        <li>Be at least 13 years of age</li>
+        <li>Maintain the security of your account credentials</li>
+        <li>Provide your own valid Replicate API key for AI generations</li>
+        <li>
+          Accept responsibility for all activities under your account
+        </li>
       </ul>
 
-      <h2>4. Content</h2>
+      <h2>4. API Keys and Third-Party Services</h2>
       <p>
-        You retain all rights to your content. By using our service, you grant us a
-        license to host and display your content.
-      </p>
-
-      <h2>5. Prohibited Content</h2>
-      <p>
-        The following types of content and pages are strictly prohibited on our
-        platform:
+        CanvAI integrates with Replicate for AI image generation. By using the
+        Service:
       </p>
       <ul>
         <li>
-          <strong>Illegal Activities:</strong> Content promoting or facilitating
-          illegal activities, including but not limited to drugs, weapons, or
-          counterfeit goods
+          You are responsible for obtaining and managing your own Replicate API
+          key
         </li>
         <li>
-          <strong>Adult Content:</strong> Pornographic material, explicit sexual
-          content, or adult services
+          Usage costs from Replicate are billed directly to you by Replicate
         </li>
         <li>
-          <strong>Hate Speech:</strong> Content promoting discrimination,
-          harassment, or violence against individuals or groups
+          You agree to comply with Replicate&apos;s terms of service and
+          acceptable use policies
         </li>
         <li>
-          <strong>Malicious Content:</strong> Malware, phishing attempts, or other
-          harmful code
+          CanvAI is not responsible for any charges incurred through your
+          Replicate usage
+        </li>
+      </ul>
+
+      <h2>5. User Content</h2>
+      <p>
+        You retain ownership of the content you create on CanvAI, including
+        sketches, compositions, and generated images. By using the Service, you
+        grant us a limited license to store and process your content as
+        necessary to provide the Service.
+      </p>
+
+      <h2>6. Prohibited Content and Use</h2>
+      <p>You agree not to use CanvAI to create or generate:</p>
+      <ul>
+        <li>
+          <strong>Illegal Content:</strong> Material that violates any
+          applicable law
         </li>
         <li>
-          <strong>Spam:</strong> Deceptive practices, scams, or unsolicited
-          commercial content
+          <strong>Harmful Content:</strong> Content promoting violence, self-harm,
+          or dangerous activities
         </li>
         <li>
-          <strong>Copyright Infringement:</strong> Unauthorized use of copyrighted
-          material, including media, software, or text
+          <strong>CSAM:</strong> Any content depicting minors in inappropriate
+          contexts
         </li>
         <li>
-          <strong>Personal Information:</strong> Publishing others&apos; personal
-          or confidential information without consent
+          <strong>Non-consensual Content:</strong> Deepfakes or explicit imagery
+          of real people without consent
         </li>
         <li>
-          <strong>Impersonation:</strong> Pages that mislead or defraud by
-          impersonating people or organizations
+          <strong>Hate Speech:</strong> Content promoting discrimination or
+          harassment
         </li>
         <li>
-          <strong>Gambling:</strong> Unauthorized gambling, betting, or related
-          activities
+          <strong>Malicious Content:</strong> Spam, phishing, or deceptive
+          material
+        </li>
+        <li>
+          <strong>Copyright Infringement:</strong> Unauthorized reproduction of
+          copyrighted works
         </li>
       </ul>
       <p>
-        We reserve the right to remove any content that violates these
-        restrictions, suspend or terminate accounts, and report violations to
-        relevant authorities. This list is not exhaustive, and we maintain
-        discretion in determining inappropriate content.
+        We reserve the right to remove content and terminate accounts that
+        violate these restrictions.
       </p>
 
-      <h2>6. Privacy</h2>
+      <h2>7. Intellectual Property</h2>
       <p>
-        Your privacy is important to us. Please review our Privacy Policy to
-        understand how we collect and use your information.
+        The CanvAI platform, including its design, features, and underlying
+        technology, is owned by us and protected by intellectual property laws.
+        You may not copy, modify, or reverse engineer any part of the Service.
       </p>
 
-      <h2>7. Termination</h2>
+      <h2>8. Disclaimer of Warranties</h2>
       <p>
-        We reserve the right to terminate or suspend access to our service
-        immediately, without prior notice or liability.
+        The Service is provided &quot;as is&quot; without warranties of any
+        kind. We do not guarantee that the Service will be uninterrupted,
+        error-free, or meet your specific requirements. AI-generated content
+        may not always produce expected results.
       </p>
 
-      <h2>8. Limitation of Liability</h2>
+      <h2>9. Limitation of Liability</h2>
       <p>
-        CanvAI shall not be liable for any indirect, incidental, special,
-        consequential, or punitive damages resulting from your use of the service.
+        To the maximum extent permitted by law, CanvAI shall not be liable for
+        any indirect, incidental, special, consequential, or punitive damages,
+        including loss of data or profits, arising from your use of the Service.
       </p>
 
-      <h2>9. Changes to Terms</h2>
+      <h2>10. Changes to Terms</h2>
       <p>
-        We reserve the right to modify these terms at any time. We will notify
-        users of any material changes via email or through the service.
+        We may update these Terms from time to time. We will notify users of
+        significant changes via email or through the Service. Continued use
+        after changes constitutes acceptance of the new terms.
       </p>
 
-      <h2>10. Contact</h2>
+      <h2>11. Termination</h2>
       <p>
-        If you have any questions about these Terms, please contact us through our
-        contact page.
+        We reserve the right to suspend or terminate your access to the Service
+        at any time for violation of these terms or for any other reason at our
+        discretion.
+      </p>
+
+      <h2>12. Contact</h2>
+      <p>
+        If you have questions about these Terms, please contact us at{" "}
+        <a href="mailto:hello@canvai.co" className="text-primary hover:underline">
+          hello@canvai.co
+        </a>
+        .
       </p>
     </PageContainer>
   );
-} 
+}
