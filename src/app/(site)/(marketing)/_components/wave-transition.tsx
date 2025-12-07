@@ -55,7 +55,12 @@ export function WaveTransition({
     <div
       ref={containerRef}
       className={`pointer-events-none absolute right-0 bottom-0 left-0 ${className}`}
-      style={{ height }}
+      style={{
+        height,
+        contain: "layout style paint",
+        contentVisibility: "auto",
+        containIntrinsicSize: `auto ${height}px`,
+      }}
     >
       <svg
         ref={svgRef}
@@ -63,6 +68,7 @@ export function WaveTransition({
         fill="none"
         preserveAspectRatio="xMidYMax slice"
         className="h-full w-full"
+        style={{ willChange: isInView ? "contents" : "auto" }}
       >
         {gradients.length > 0 && (
           <defs>
