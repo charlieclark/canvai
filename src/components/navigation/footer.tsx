@@ -16,7 +16,7 @@ const iconMap = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-[#F5F3EE]">
+    <footer className="bg-[#0f172b]">
       <div className="mx-auto max-w-screen-xl">
         <div className="grid grid-cols-1 gap-8 px-6 py-16 md:grid-cols-12 lg:px-8">
           {/* Brand Column */}
@@ -25,7 +25,7 @@ export function Footer() {
               {/* Logo mark */}
               <div className="relative h-8 w-8">
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#0066CC] to-[#059669]" />
-                <div className="absolute inset-[3px] rounded-md bg-[#F5F3EE]" />
+                <div className="absolute inset-[3px] rounded-md bg-[#0f172b]" />
                 <div className="absolute inset-[6px] rounded bg-gradient-to-br from-[#0066CC] to-[#059669]" />
               </div>
               <span className="text-xl font-semibold tracking-tight">
@@ -34,7 +34,7 @@ export function Footer() {
                 </span>
               </span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-400">
               Transform your creative vision into stunning visuals with
               AI-powered generation on an infinite canvas.
             </p>
@@ -48,7 +48,7 @@ export function Footer() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-slate-400 transition-colors hover:text-slate-600"
+                    className="text-slate-500 transition-colors hover:text-slate-300"
                     aria-label={link.label}
                   >
                     <Icon size={20} />
@@ -60,13 +60,13 @@ export function Footer() {
 
           {/* Product Links */}
           <div className="md:col-span-2 md:col-start-6">
-            <h3 className="text-sm font-semibold text-slate-900">Product</h3>
+            <h3 className="text-sm font-semibold text-white">Product</h3>
             <ul className="mt-4 space-y-3">
               {productLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-500 transition-colors hover:text-slate-900"
+                    className="text-sm text-slate-400 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -77,13 +77,13 @@ export function Footer() {
 
           {/* Company Links */}
           <div className="md:col-span-2">
-            <h3 className="text-sm font-semibold text-slate-900">Company</h3>
+            <h3 className="text-sm font-semibold text-white">Company</h3>
             <ul className="mt-4 space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-500 transition-colors hover:text-slate-900"
+                    className="text-sm text-slate-400 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -94,13 +94,13 @@ export function Footer() {
 
           {/* Legal Links */}
           <div className="md:col-span-2">
-            <h3 className="text-sm font-semibold text-slate-900">Legal</h3>
+            <h3 className="text-sm font-semibold text-white">Legal</h3>
             <ul className="mt-4 space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-500 transition-colors hover:text-slate-900"
+                    className="text-sm text-slate-400 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -111,17 +111,17 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-200 px-6 py-6 lg:px-8">
+        <div className="border-t border-white/10 px-6 py-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               © {new Date().getFullYear()} CanvAi. All rights reserved.
             </p>
             <div className="flex items-center gap-2">
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-400">
                 Made with care by{" "}
                 <Link
                   href="https://builtby.cc"
-                  className="font-medium text-slate-700 transition-colors hover:text-slate-900"
+                  className="font-medium text-slate-300 transition-colors hover:text-white"
                 >
                   Charlie
                 </Link>

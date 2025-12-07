@@ -115,7 +115,7 @@ export function HeroSection() {
         {/* Left side - Content */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           {/* Main headline */}
-          <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-balance text-slate-900 sm:text-6xl">
+          <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-balance text-slate-900 sm:text-6xl">
             Sketch it. Frame it. Prompt it.{" "}
             <span className="relative inline-block">
               <span className="bg-gradient-to-r from-[#0066CC] via-[#0891B2] to-[#059669] bg-clip-text text-transparent">
@@ -184,9 +184,10 @@ export function HeroSection() {
         {/* Right side - Browser Frame with Video */}
         <div className="flex items-center justify-center lg:justify-end">
           <BrowserFrame
-            className="w-full max-w-xl shadow-2xl"
-            domainPreview="canvai.com"
+            className="w-full max-w-2xl shadow-2xl"
+            domainPreview="canvai.com/dashboard"
             variant="dark"
+            size="small"
           >
             <VideoSection />
           </BrowserFrame>

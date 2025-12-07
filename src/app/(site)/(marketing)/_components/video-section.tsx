@@ -51,7 +51,7 @@ export default function VideoSection({ className }: VideoSectionProps) {
       console.log("LOADING");
       const player = new window.Vimeo.Player("vimeo-player", {
         id: 1144249043,
-        autoplay: false,
+        autoplay: true,
         loop: true,
         muted: true,
         controls: false,
@@ -109,10 +109,10 @@ export default function VideoSection({ className }: VideoSectionProps) {
           )}
         >
           <Image
-            src="/marketing/hero-video-thumbnail.png"
+            src="/marketing/hero-video-thumbnail.jpg"
             alt="Video thumbnail"
             fill
-            className="object-cover blur-md scale-150"
+            className="object-cover"
             priority
           />
         </div>

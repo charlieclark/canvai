@@ -56,7 +56,10 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="relative overflow-hidden bg-[#0f172b] py-32">
+    <section
+      id="features"
+      className="relative overflow-hidden bg-[#0f172b] pt-32 pb-48"
+    >
       {/* Subtle grid pattern */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -131,6 +134,46 @@ export function FeaturesSection() {
           ))}
         </div>
       </div>
+
+      {/* Bottom waves transition to cream CTA */}
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-[200px]">
+        <svg
+          viewBox="0 0 1440 200"
+          fill="none"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+        >
+          <defs>
+            <linearGradient id="featureWave1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#0891B2" />
+              <stop offset="50%" stopColor="#059669" />
+              <stop offset="100%" stopColor="#10B981" />
+            </linearGradient>
+            <linearGradient id="featureWave2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#F97316" />
+              <stop offset="50%" stopColor="#FB923C" />
+              <stop offset="100%" stopColor="#FBBF24" />
+            </linearGradient>
+          </defs>
+
+          {/* Front wave - cream (target color) */}
+          <path fill="#F5F3EE">
+            <animate
+              attributeName="d"
+              dur="7s"
+              repeatCount="indefinite"
+              values="
+                M0 160 C120 145, 240 170, 360 155 C480 140, 600 165, 720 150 C840 135, 960 160, 1080 145 C1200 130, 1320 155, 1440 140 L1440 200 L0 200 Z;
+                M0 145 C120 165, 240 150, 360 165 C480 180, 600 155, 720 170 C840 185, 960 160, 1080 175 C1200 190, 1320 165, 1440 155 L1440 200 L0 200 Z;
+                M0 170 C120 155, 240 165, 360 150 C480 135, 600 160, 720 145 C840 130, 960 155, 1080 140 C1200 125, 1320 150, 1440 165 L1440 200 L0 200 Z;
+                M0 160 C120 145, 240 170, 360 155 C480 140, 600 165, 720 150 C840 135, 960 160, 1080 145 C1200 130, 1320 155, 1440 140 L1440 200 L0 200 Z
+              "
+              calcMode="spline"
+              keySplines="0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1"
+            />
+          </path>
+        </svg>
+      </div>
     </section>
   );
 }
@@ -156,7 +199,8 @@ function FeatureCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay }}
-      className="group relative rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent p-6 transition-all duration-300 hover:border-white/10 hover:bg-white/[0.05]"
+      whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+      className="group relative rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent p-6 transition-[border-color] duration-300 hover:border-white/10"
     >
       {/* Hover glow effect */}
       <div
