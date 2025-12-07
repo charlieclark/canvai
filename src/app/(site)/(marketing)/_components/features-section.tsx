@@ -108,7 +108,7 @@ export function FeaturesSection() {
             </span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400">
-            Nano Canvas combines the freedom of a digital canvas with the power
+            CanvAi combines the freedom of a digital canvas with the power
             of generative AI. No complex workflows—just draw, compose, and
             create.
           </p>

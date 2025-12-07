@@ -2,8 +2,8 @@ import { PageContainer } from "@/components/shared/page-container";
 import { Mail } from "lucide-react";
 
 export const metadata = {
-  title: "Contact | CanvAI",
-  description: "Get in touch with the CanvAI team.",
+  title: "Contact | CanvAi",
+  description: "Get in touch with the CanvAi team.",
 };
 
 export default function ContactPage() {
@@ -31,7 +31,7 @@ export default function ContactPage() {
       <h2>What We Can Help With</h2>
       <ul>
         <li>
-          <strong>General Inquiries:</strong> Questions about CanvAI, how it
+          <strong>General Inquiries:</strong> Questions about CanvAi, how it
           works, or getting started
         </li>
         <li>

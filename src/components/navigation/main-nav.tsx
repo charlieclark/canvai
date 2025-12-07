@@ -29,7 +29,7 @@ export function MainNav() {
               </span>
             </span>
           </Link>
-          <div className="hidden items-center gap-6 md:flex">
+          {/* <div className="hidden items-center gap-6 md:flex">
             {mainNavLinks.map((link) => (
               <button
                 key={link.id}
@@ -43,7 +43,7 @@ export function MainNav() {
                 {link.label}
               </button>
             ))}
-          </div>
+          </div> */}
         </div>
 
         {/* Auth buttons */}

@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Terms of Service | CanvAI",
+  title: "Terms of Service | CanvAi",
   description: "Read our terms of service and user agreement.",
 };
 
@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <PageContainer
       title="Terms of Service"
-      description="Please read these terms carefully before using CanvAI."
+      description="Please read these terms carefully before using CanvAi."
     >
       <p className="text-sm text-muted-foreground">
         Last updated: December 2024
@@ -17,21 +17,21 @@ export default function TermsPage() {
 
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing and using CanvAI (&quot;the Service&quot;), you accept and
+        By accessing and using CanvAi (&quot;the Service&quot;), you accept and
         agree to be bound by these Terms of Service. If you do not agree to
         these terms, please do not use our Service.
       </p>
 
       <h2>2. Description of Service</h2>
       <p>
-        CanvAI provides an infinite canvas workspace for creating AI-generated
+        CanvAi provides an infinite canvas workspace for creating AI-generated
         artwork. Users can sketch, compose frames, and generate images using
         AI models powered by Replicate. The Service requires users to provide
         their own Replicate API key for image generation.
       </p>
 
       <h2>3. User Accounts</h2>
-      <p>To use CanvAI, you must:</p>
+      <p>To use CanvAi, you must:</p>
       <ul>
         <li>Create an account with accurate and complete information</li>
         <li>Be at least 13 years of age</li>
@@ -44,7 +44,7 @@ export default function TermsPage() {
 
       <h2>4. API Keys and Third-Party Services</h2>
       <p>
-        CanvAI integrates with Replicate for AI image generation. By using the
+        CanvAi integrates with Replicate for AI image generation. By using the
         Service:
       </p>
       <ul>
@@ -60,21 +60,21 @@ export default function TermsPage() {
           acceptable use policies
         </li>
         <li>
-          CanvAI is not responsible for any charges incurred through your
+          CanvAi is not responsible for any charges incurred through your
           Replicate usage
         </li>
       </ul>
 
       <h2>5. User Content</h2>
       <p>
-        You retain ownership of the content you create on CanvAI, including
+        You retain ownership of the content you create on CanvAi, including
         sketches, compositions, and generated images. By using the Service, you
         grant us a limited license to store and process your content as
         necessary to provide the Service.
       </p>
 
       <h2>6. Prohibited Content and Use</h2>
-      <p>You agree not to use CanvAI to create or generate:</p>
+      <p>You agree not to use CanvAi to create or generate:</p>
       <ul>
         <li>
           <strong>Illegal Content:</strong> Material that violates any
@@ -112,7 +112,7 @@ export default function TermsPage() {
 
       <h2>7. Intellectual Property</h2>
       <p>
-        The CanvAI platform, including its design, features, and underlying
+        The CanvAi platform, including its design, features, and underlying
         technology, is owned by us and protected by intellectual property laws.
         You may not copy, modify, or reverse engineer any part of the Service.
       </p>
@@ -127,7 +127,7 @@ export default function TermsPage() {
 
       <h2>9. Limitation of Liability</h2>
       <p>
-        To the maximum extent permitted by law, CanvAI shall not be liable for
+        To the maximum extent permitted by law, CanvAi shall not be liable for
         any indirect, incidental, special, consequential, or punitive damages,
         including loss of data or profits, arising from your use of the Service.
       </p>

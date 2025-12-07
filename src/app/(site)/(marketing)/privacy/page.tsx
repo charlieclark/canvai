@@ -1,8 +1,8 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Privacy Policy | CanvAI",
-  description: "Learn how CanvAI collects, uses, and protects your data.",
+  title: "Privacy Policy | CanvAi",
+  description: "Learn how CanvAi collects, uses, and protects your data.",
 };
 
 export default function PrivacyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       </p>
 
       <h2>Information We Collect</h2>
-      <p>When you use CanvAI, we collect:</p>
+      <p>When you use CanvAi, we collect:</p>
 
       <h3>Account Information</h3>
       <ul>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
       <h2>How We Use Your Information</h2>
       <p>We use collected information to:</p>
       <ul>
-        <li>Provide and maintain the CanvAI service</li>
+        <li>Provide and maintain the CanvAi service</li>
         <li>Process image generation requests through Replicate</li>
         <li>Store and sync your projects across devices</li>
         <li>Send important service updates and notifications</li>
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
 
       <h2>Children&apos;s Privacy</h2>
       <p>
-        CanvAI is not intended for children under 13. We do not knowingly
+        CanvAi is not intended for children under 13. We do not knowingly
         collect personal information from children under 13. If you believe a
         child has provided us with personal information, please contact us.
       </p>

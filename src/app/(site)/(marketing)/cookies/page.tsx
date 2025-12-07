@@ -1,15 +1,15 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "Cookie Policy | CanvAI",
-  description: "Learn how CanvAI uses cookies and similar technologies.",
+  title: "Cookie Policy | CanvAi",
+  description: "Learn how CanvAi uses cookies and similar technologies.",
 };
 
 export default function CookiesPage() {
   return (
     <PageContainer
       title="Cookie Policy"
-      description="How we use cookies and similar technologies on CanvAI"
+      description="How we use cookies and similar technologies on CanvAi"
     >
       <p className="text-sm text-muted-foreground">
         Last updated: December 2024
@@ -24,11 +24,11 @@ export default function CookiesPage() {
       </p>
 
       <h2>How We Use Cookies</h2>
-      <p>CanvAI uses cookies for the following purposes:</p>
+      <p>CanvAi uses cookies for the following purposes:</p>
 
       <h3>Essential Cookies</h3>
       <p>
-        These cookies are necessary for CanvAI to function properly. They
+        These cookies are necessary for CanvAi to function properly. They
         enable core features like:
       </p>
       <ul>
@@ -53,7 +53,7 @@ export default function CookiesPage() {
       <h3>Analytics Cookies</h3>
       <p>
         We may use analytics cookies to understand how users interact with
-        CanvAI. This helps us improve the Service. Analytics data is aggregated
+        CanvAi. This helps us improve the Service. Analytics data is aggregated
         and does not personally identify you.
       </p>
 
@@ -95,7 +95,7 @@ export default function CookiesPage() {
         </li>
       </ul>
       <p>
-        Note that blocking essential cookies may prevent CanvAI from working
+        Note that blocking essential cookies may prevent CanvAi from working
         properly.
       </p>
 

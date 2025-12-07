@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/shared/page-container";
 
 export const metadata = {
-  title: "About | CanvAI",
+  title: "About | CanvAi",
   description:
     "Learn about CanvAI—the infinite canvas where rough sketches become polished AI art.",
 };
@@ -9,19 +9,19 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <PageContainer
-      title="About CanvAI"
+      title="About CanvAi"
       description="The infinite canvas where rough sketches become polished AI art"
     >
       <h2>Our Vision</h2>
       <p>
-        CanvAI was born from a simple idea: what if creating AI art was as
+        CanvAi was born from a simple idea: what if creating AI art was as
         natural as sketching on paper? We built an infinite canvas that bridges
         the gap between your creative vision and AI-powered image generation.
       </p>
 
       <h2>How It Works</h2>
       <p>
-        CanvAI combines the freedom of a digital canvas with the power of
+        CanvAi combines the freedom of a digital canvas with the power of
         generative AI. Sketch rough ideas, compose frames from shapes and
         images, then transform them into polished artwork using our fine-tuned
         Nano Banana Pro model—all in one seamless workflow.
