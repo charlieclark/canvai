@@ -61,20 +61,6 @@ export function FeaturesSection() {
       id="features"
       className="relative overflow-hidden bg-[#0f172b] pt-32 pb-48"
     >
-      {/* Subtle grid pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
-
-      {/* Radial glow effects */}
-      <div className="pointer-events-none absolute top-0 left-1/4 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-to-br from-cyan-500/10 to-transparent blur-3xl" />
-      <div className="pointer-events-none absolute right-0 bottom-0 h-[500px] w-[500px] translate-x-1/4 rounded-full bg-gradient-to-tl from-purple-500/10 to-transparent blur-3xl" />
-
       <div className="relative z-10 mx-auto max-w-screen-xl px-6">
         {/* Section header */}
         <motion.div
