@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
+import { useInView } from "@/hooks/use-in-view";
+
 interface WaveGradient {
   id: string;
   colors: { offset: string; color: string }[];
@@ -30,12 +34,31 @@ export function WaveTransition({
   layers,
   className = "",
 }: WaveTransitionProps) {
+  const { ref: containerRef, isInView } = useInView<HTMLDivElement>({
+    threshold: 0,
+    rootMargin: "50px",
+  });
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    if (isInView) {
+      svg.unpauseAnimations();
+    } else {
+      svg.pauseAnimations();
+    }
+  }, [isInView]);
+
   return (
     <div
+      ref={containerRef}
       className={`pointer-events-none absolute right-0 bottom-0 left-0 ${className}`}
       style={{ height }}
     >
       <svg
+        ref={svgRef}
         viewBox={`0 0 1440 ${height}`}
         fill="none"
         preserveAspectRatio="none"
@@ -165,47 +188,8 @@ export const creamToDarkWave = {
 /** Dark to Cream transition (used after Features) */
 export const darkToCreamWave = {
   height: 200,
-  gradients: [
-    {
-      id: "dark-wave-teal",
-      colors: [
-        { offset: "0%", color: "#0891B2" },
-        { offset: "50%", color: "#059669" },
-        { offset: "100%", color: "#10B981" },
-      ],
-    },
-    {
-      id: "dark-wave-orange",
-      colors: [
-        { offset: "0%", color: "#F97316" },
-        { offset: "50%", color: "#FB923C" },
-        { offset: "100%", color: "#FBBF24" },
-      ],
-    },
-  ],
+  gradients: [],
   layers: [
-    {
-      gradient: "dark-wave-teal",
-      opacity: 0.5,
-      duration: 8,
-      paths: [
-        "M0 100 C120 70, 240 120, 360 90 C480 60, 600 110, 720 80 C840 50, 960 100, 1080 70 C1200 40, 1320 90, 1440 60 L1440 200 L0 200 Z",
-        "M0 80 C120 110, 240 70, 360 100 C480 130, 600 80, 720 110 C840 140, 960 90, 1080 120 C1200 150, 1320 100, 1440 80 L1440 200 L0 200 Z",
-        "M0 110 C120 80, 240 100, 360 70 C480 40, 600 90, 720 60 C840 30, 960 80, 1080 50 C1200 20, 1320 70, 1440 100 L1440 200 L0 200 Z",
-        "M0 100 C120 70, 240 120, 360 90 C480 60, 600 110, 720 80 C840 50, 960 100, 1080 70 C1200 40, 1320 90, 1440 60 L1440 200 L0 200 Z",
-      ],
-    },
-    {
-      gradient: "dark-wave-orange",
-      opacity: 0.4,
-      duration: 6,
-      paths: [
-        "M0 130 C120 110, 240 150, 360 130 C480 110, 600 140, 720 120 C840 100, 960 140, 1080 120 C1200 100, 1320 130, 1440 110 L1440 200 L0 200 Z",
-        "M0 120 C120 150, 240 120, 360 140 C480 160, 600 130, 720 150 C840 170, 960 140, 1080 160 C1200 180, 1320 150, 1440 130 L1440 200 L0 200 Z",
-        "M0 140 C120 120, 240 140, 360 120 C480 100, 600 130, 720 110 C840 90, 960 120, 1080 100 C1200 80, 1320 110, 1440 130 L1440 200 L0 200 Z",
-        "M0 130 C120 110, 240 150, 360 130 C480 110, 600 140, 720 120 C840 100, 960 140, 1080 120 C1200 100, 1320 130, 1440 110 L1440 200 L0 200 Z",
-      ],
-    },
     {
       fill: "#F5F3EE",
       opacity: 1,
