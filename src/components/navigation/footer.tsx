@@ -118,12 +118,19 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-2">
               <p className="text-sm text-slate-400">
-                Made with care by{" "}
+                Made by{" "}
                 <Link
-                  href="https://builtby.cc"
+                  href="https://charlieclark.co"
                   className="font-medium text-slate-300 transition-colors hover:text-white"
                 >
                   Charlie
+                </Link>{" "}
+                from{" "}
+                <Link
+                  href="https://liinks.co"
+                  className="font-medium text-slate-300 transition-colors hover:text-white"
+                >
+                  Liinks
                 </Link>
               </p>
             </div>
