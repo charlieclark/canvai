@@ -61,7 +61,7 @@ export function BrowserFrame({
                         : "text-white/40 hover:text-white/60",
                     )}
                   >
-                    {domainPreview || "nano-canvas.com"}
+                    {domainPreview || "canvai.co"}
                   </p>
                 </Link>
               ) : (
@@ -71,7 +71,7 @@ export function BrowserFrame({
                     isLight ? "text-gray-400" : "text-white/40",
                   )}
                 >
-                  {domainPreview || "nano-canvas.com"}
+                  {domainPreview || "canvai.co"}
                 </p>
               )}
             </div>

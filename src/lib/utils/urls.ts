@@ -6,6 +6,6 @@ export function getBaseUrl() {
 
 export const getBaseProductionUrl = () => {
   if (typeof window !== "undefined") return window.location.origin;
-  if (process.env.NODE_ENV === "production") return `https://www.nano-canvas.com`;
+  if (process.env.NODE_ENV === "production") return `https://www.canvai.co`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 };
