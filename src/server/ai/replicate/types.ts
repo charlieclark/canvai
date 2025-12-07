@@ -43,3 +43,4 @@ export interface ImageModelConfig<TInput extends ModelInput = ModelInput> {
   mapInput: (input: TInput) => Record<string, unknown>;
 }
 
+

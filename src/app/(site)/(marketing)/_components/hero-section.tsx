@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import useSignupModal from "@/hooks/use-signup";
 import { ArrowRight } from "lucide-react";
 import { BrowserFrame } from "./browser-frame";
-import { VideoSection } from "./video-section";
+import VideoSection from "./video-section";
 
 export function HeroSection() {
   const { openSignupModal } = useSignupModal();
@@ -111,15 +111,15 @@ export function HeroSection() {
       <div className="pointer-events-none absolute top-1/3 -left-32 h-64 w-64 rounded-full bg-gradient-to-br from-[#0066CC]/10 to-[#059669]/5 blur-3xl" />
 
       {/* Split view container */}
-      <div className="relative z-10 mx-auto grid w-full max-w-screen-xl grid-cols-1 items-center gap-12 px-6 pb-32 pt-24 lg:grid-cols-2 lg:gap-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-screen-xl grid-cols-1 items-center gap-12 px-6 pt-24 pb-32 lg:grid-cols-2 lg:gap-16">
         {/* Left side - Content */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           {/* Main headline */}
-          <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-            Where creativity{" "}
+          <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-balance text-slate-900 sm:text-6xl">
+            Sketch it. Frame it. Prompt it.{" "}
             <span className="relative inline-block">
               <span className="bg-gradient-to-r from-[#0066CC] via-[#0891B2] to-[#059669] bg-clip-text text-transparent">
-                flows
+                Ship it.
               </span>
               <svg
                 className="absolute -bottom-2 left-0 w-full"
@@ -151,8 +151,9 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-600 md:text-xl">
-            Transform your creative vision into stunning visuals. Sketch,
-            design, and let AI bring your ideas to life.
+            The infinite canvas where rough sketches become polished AI art.
+            Compose your ideas, add a prompt, and generate stunning visuals—all
+            in one creative workspace.
           </p>
 
           {/* CTA buttons */}

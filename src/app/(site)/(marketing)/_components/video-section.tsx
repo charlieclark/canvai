@@ -1,69 +1,124 @@
 "use client";
 
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
+import Script from "next/script";
+import { useInView } from "@/hooks/use-in-view";
 
 interface VideoSectionProps {
   className?: string;
 }
 
-export function VideoSection({ className }: VideoSectionProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+interface VimeoPlayer {
+  on: (event: string, callback: () => void) => void;
+  play: () => Promise<void>;
+  pause: () => Promise<void>;
+}
+
+interface VimeoSDK {
+  Player: new (
+    element: string,
+    options: {
+      id: number;
+      autoplay: boolean;
+      loop: boolean;
+      muted: boolean;
+      controls: boolean;
+      background: boolean;
+    },
+  ) => VimeoPlayer;
+}
+
+declare global {
+  interface Window {
+    Vimeo?: VimeoSDK;
+  }
+}
+
+export default function VideoSection({ className }: VideoSectionProps) {
+  const { ref: containerRef, isInView } = useInView<HTMLDivElement>({
+    threshold: 0.2,
+  });
   const [isLoading, setIsLoading] = useState(true);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const playerRef = useRef<VimeoPlayer | null>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    const container = containerRef.current;
-    if (!video || !container) return;
+    // Initialize the player when the SDK is loaded
+    if (typeof window !== "undefined" && window.Vimeo) {
+      console.log("LOADING");
+      const player = new window.Vimeo.Player("vimeo-player", {
+        id: 1143227929,
+        autoplay: false,
+        loop: true,
+        muted: true,
+        controls: false,
+        background: false,
+      });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            video.play().catch(() => {
-              // Autoplay may be blocked, that's okay
-            });
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { threshold: 0.2 },
-    );
+      player.on("play", () => {
+        setIsLoading(false);
+      });
 
-    observer.observe(container);
+      playerRef.current = player;
+    }
+  }, [isScriptLoaded]);
 
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  // Play/pause based on visibility
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    console.log({ isInView });
+
+    if (isInView) {
+      player.play().catch(console.error);
+    } else {
+      player.pause().catch(console.error);
+    }
+  }, [isInView]);
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
-      {/* Loading placeholder */}
-      <div
-        className={cn(
-          "absolute inset-0 z-10 bg-slate-100 transition-opacity duration-500",
-          isLoading ? "opacity-100" : "opacity-0 pointer-events-none",
-        )}
+    <div ref={containerRef} className={cn("w-full", className)}>
+      <Script
+        src="https://player.vimeo.com/api/player.js"
+        onLoad={() => {
+          setIsScriptLoaded(true);
+        }}
+      />
+      <style jsx global>{`
+        #vimeo-player iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+      `}</style>
+      <AspectRatio
+        ratio={996 / 564}
+        className="pointer-events-none relative w-full overflow-hidden"
       >
-        <div className="flex h-full w-full items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+        <div
+          className={cn(
+            "absolute inset-0 z-10 transition-opacity duration-500",
+            isLoading ? "opacity-100" : "opacity-0",
+          )}
+        >
+          <Image
+            src="/marketing/hero-video-thumbnail.png"
+            alt="Video thumbnail"
+            fill
+            className="object-cover blur-md scale-150"
+            priority
+          />
         </div>
-      </div>
 
-      <video
-        ref={videoRef}
-        className="h-full w-full object-cover"
-        loop
-        muted
-        playsInline
-        onCanPlay={() => setIsLoading(false)}
-      >
-        <source src="/about.mp4" type="video/mp4" />
-      </video>
+        <div id="vimeo-player" className="absolute inset-0 h-full w-full" />
+      </AspectRatio>
     </div>
   );
 }
-
