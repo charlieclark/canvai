@@ -70,12 +70,13 @@ export function WaveTransition({
   return (
     <div
       ref={containerRef}
-      className={`pointer-events-none absolute right-0 bottom-0 left-0 ${className}`}
+      className={`pointer-events-none absolute right-0 left-0 ${className}`}
       style={{
-        height,
+        height: height + 1,
+        bottom: -1,
         contain: "layout style paint",
         contentVisibility: "auto",
-        containIntrinsicSize: `auto ${height}px`,
+        containIntrinsicSize: `auto ${height + 1}px`,
       }}
     >
       <svg
