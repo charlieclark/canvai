@@ -3,20 +3,12 @@ export const mainNavLinks = [
     id: "features",
     label: "Features",
   },
-  {
-    id: "how-it-works",
-    label: "How It Works",
-  },
 ] as const;
 
 export const productLinks = [
   {
     href: "/#features",
     label: "Features",
-  },
-  {
-    href: "/#how-it-works",
-    label: "How It Works",
   },
 ] as const;
 

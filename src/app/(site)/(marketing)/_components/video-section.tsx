@@ -50,7 +50,7 @@ export default function VideoSection({ className }: VideoSectionProps) {
     if (typeof window !== "undefined" && window.Vimeo) {
       console.log("LOADING");
       const player = new window.Vimeo.Player("vimeo-player", {
-        id: 1143227929,
+        id: 1144249043,
         autoplay: false,
         loop: true,
         muted: true,

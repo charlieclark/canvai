@@ -172,7 +172,7 @@ export function HeroSection() {
               className="h-14 rounded-full px-8 text-base font-medium text-slate-700 hover:bg-white/80"
               onClick={() => {
                 document
-                  .getElementById("how-it-works")
+                  .getElementById("features")
                   ?.scrollIntoView({ behavior: "smooth" });
               }}
             >
@@ -185,10 +185,10 @@ export function HeroSection() {
         <div className="flex items-center justify-center lg:justify-end">
           <BrowserFrame
             className="w-full max-w-xl shadow-2xl"
-            domainPreview="nano-canvas.com/demo"
-            variant="light"
+            domainPreview="canvai.com"
+            variant="dark"
           >
-            <VideoSection className="aspect-video" />
+            <VideoSection />
           </BrowserFrame>
         </div>
       </div>

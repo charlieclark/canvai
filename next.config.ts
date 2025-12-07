@@ -9,20 +9,28 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   images: {
     remotePatterns: [
+      // latest
       {
         protocol: "https",
-        hostname: "lftz25oez4aqbxpq.public.blob.vercel-storage.com",
+        hostname: "upl6ifjcwuwaecns.public.blob.vercel-storage.com",
         port: "",
         pathname: "**",
         search: "",
       },
-      {
-        protocol: "https",
-        hostname: "euquhzdybpi8bw0d.public.blob.vercel-storage.com",
-        port: "",
-        pathname: "**",
-        search: "",
-      },
+      // {
+      //   protocol: "https",
+      //   hostname: "lftz25oez4aqbxpq.public.blob.vercel-storage.com",
+      //   port: "",
+      //   pathname: "**",
+      //   search: "",
+      // },
+      // {
+      //   protocol: "https",
+      //   hostname: "euquhzdybpi8bw0d.public.blob.vercel-storage.com",
+      //   port: "",
+      //   pathname: "**",
+      //   search: "",
+      // },
     ],
   },
   outputFileTracingIncludes: {
