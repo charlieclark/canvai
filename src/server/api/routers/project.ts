@@ -89,8 +89,8 @@ export const projectRouter = createTRPCRouter({
       const project = await ctx.db.project.update({
         where: { id: input.id },
         data: {
-          ...(input.name !== undefined && { name: input.name }),
-          ...(input.snapshot !== undefined && { snapshot: input.snapshot }),
+          ...(input.name ? { name: input.name } : {}),
+          ...(input.snapshot ? { snapshot: input.snapshot } : {}),
         },
       });
 
@@ -127,4 +127,3 @@ export const projectRouter = createTRPCRouter({
       return { success: true };
     }),
 });
-
