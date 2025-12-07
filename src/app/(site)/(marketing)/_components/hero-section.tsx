@@ -93,7 +93,7 @@ export function HeroSection() {
         <div className="flex items-center justify-center lg:justify-end">
           <BrowserFrame
             className="w-full max-w-2xl shadow-2xl"
-            domainPreview="canvai.com/dashboard"
+            domainPreview="canvai.co/dashboard"
             variant="dark"
             size="small"
           >

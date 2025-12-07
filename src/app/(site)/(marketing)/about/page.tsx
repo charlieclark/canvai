@@ -64,7 +64,10 @@ export default function AboutPage() {
       <h2>Get in Touch</h2>
       <p>
         Have questions or feedback? We&apos;d love to hear from you at{" "}
-        <a href="mailto:hello@canvai.co" className="text-primary hover:underline">
+        <a
+          href="mailto:hello@canvai.co"
+          className="text-primary hover:underline"
+        >
           hello@canvai.co
         </a>
         .
