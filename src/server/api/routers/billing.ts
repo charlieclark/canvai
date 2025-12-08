@@ -9,6 +9,7 @@ import Stripe from "stripe";
 import { env } from "@/env";
 import { getBaseProductionUrl } from "@/lib/utils/urls";
 import type { db as database } from "@/server/db";
+import sendSubscriptionUpgradeEmail from "@/server/emails/senders/subscriptionUpgrade";
 
 export const stripe = new Stripe(env.STRIPE_PRIVATE_KEY);
 
@@ -248,6 +249,9 @@ export const billingRouter = createTRPCRouter({
           creditsPeriodEnd,
         },
       });
+
+      // Send confirmation email
+      await sendSubscriptionUpgradeEmail({ userId });
 
       return { success: true };
     }),

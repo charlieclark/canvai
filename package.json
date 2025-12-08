@@ -96,6 +96,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@react-email/preview-server": "^4.3.2",
     "@tailwindcss/postcss": "^4.0.15",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.14.10",

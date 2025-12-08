@@ -13,8 +13,8 @@ import {
   Preview,
 } from "@react-email/components";
 
-const LOGO_TEXT = "nano-canvas";
-const FOOTER_TAGLINE = "showcase what makes you, you";
+const LOGO_TEXT = "CanvAi";
+const FOOTER_TAGLINE = "AI-powered image generation for creators";
 const FOOTER_ADDRESS = "335 Carroll St, Brooklyn, NY";
 const UNSUBSCRIBE_URL_PLACEHOLDER = "{{{RESEND_UNSUBSCRIBE_URL}}}";
 const UNSUBSCRIBE_TEXT = "Unsubscribe";
