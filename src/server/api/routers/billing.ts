@@ -284,12 +284,16 @@ export async function refreshCreditsIfNeeded(
     return { hasCredits: false, credits: 0, plan: "FREE" };
   }
 
-  // If user is on FREE plan, no credits
+  // If user is on FREE plan, return their free credits (no period/renewal logic)
   if (user.plan === "FREE") {
-    return { hasCredits: false, credits: 0, plan: "FREE" };
+    return {
+      hasCredits: user.credits > 0,
+      credits: user.credits,
+      plan: "FREE",
+    };
   }
 
-  // If credits period hasn't ended yet, return current credits
+  // SUBSCRIBED users: If credits period hasn't ended yet, return current credits
   if (user.creditsPeriodEnd && user.creditsPeriodEnd > new Date()) {
     return {
       hasCredits: user.credits > 0,
