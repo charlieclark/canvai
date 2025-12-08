@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Sparkles, Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
+import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
 
 interface AssetGenerationModalProps {
   projectId: string;
@@ -28,6 +29,8 @@ export function AssetGenerationModal({
 }: AssetGenerationModalProps) {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showInsufficientCreditModal, setShowInsufficientCreditModal] =
+    useState(false);
 
   const utils = api.useUtils();
 
@@ -42,6 +45,11 @@ export function AssetGenerationModal({
     onError: (error) => {
       console.error("Asset generation failed:", error);
       setIsGenerating(false);
+
+      // Check for insufficient credit error
+      if (error.message === "REPLICATE_INSUFFICIENT_CREDIT") {
+        setShowInsufficientCreditModal(true);
+      }
     },
   });
 
@@ -62,15 +70,20 @@ export function AssetGenerationModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Generate Asset</DialogTitle>
-          <DialogDescription>
-            Create a standalone image asset that can be composited within
-            frames.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <InsufficientCreditModal
+        open={showInsufficientCreditModal}
+        onOpenChange={setShowInsufficientCreditModal}
+      />
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate Asset</DialogTitle>
+            <DialogDescription>
+              Create a standalone image asset that can be composited within
+              frames.
+            </DialogDescription>
+          </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
@@ -116,6 +129,7 @@ export function AssetGenerationModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

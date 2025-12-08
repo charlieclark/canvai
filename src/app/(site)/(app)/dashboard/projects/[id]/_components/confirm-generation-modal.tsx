@@ -15,6 +15,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
 import { uploadImage } from "@/lib/utils/upload";
 import type { AspectRatio } from "@/lib/utils/image";
+import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
 
 interface ConfirmGenerationModalProps {
   projectId: string;
@@ -36,6 +37,8 @@ export function ConfirmGenerationModal({
   onSuccess,
 }: ConfirmGenerationModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showInsufficientCreditModal, setShowInsufficientCreditModal] =
+    useState(false);
 
   const utils = api.useUtils();
 
@@ -50,6 +53,11 @@ export function ConfirmGenerationModal({
     onError: (error) => {
       console.error("Generation failed:", error);
       setIsGenerating(false);
+
+      // Check for insufficient credit error
+      if (error.message === "REPLICATE_INSUFFICIENT_CREDIT") {
+        setShowInsufficientCreditModal(true);
+      }
     },
   });
 
@@ -90,15 +98,20 @@ export function ConfirmGenerationModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Confirm Generation</DialogTitle>
-          <DialogDescription>
-            Review the frame that will be used as a reference for your
-            generation.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <InsufficientCreditModal
+        open={showInsufficientCreditModal}
+        onOpenChange={setShowInsufficientCreditModal}
+      />
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Generation</DialogTitle>
+            <DialogDescription>
+              Review the frame that will be used as a reference for your
+              generation.
+            </DialogDescription>
+          </DialogHeader>
 
         {/* Preview Image */}
         {previewUrl && (
@@ -144,6 +157,7 @@ export function ConfirmGenerationModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

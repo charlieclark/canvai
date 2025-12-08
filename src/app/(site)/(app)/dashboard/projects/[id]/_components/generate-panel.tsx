@@ -125,7 +125,10 @@ export function GeneratePanel({
       if (shape?.type !== "frame") return null;
 
       const bounds = editor.getShapeGeometry(shape).bounds;
-      const detectedAspectRatio = detectAspectRatio(bounds.width, bounds.height);
+      const detectedAspectRatio = detectAspectRatio(
+        bounds.width,
+        bounds.height,
+      );
 
       const { blob } = await editor.toImage([selectedFrameId], {
         format: "webp",
@@ -224,7 +227,9 @@ export function GeneratePanel({
                 <Label htmlFor="new-frame-aspect-ratio">Frame Size</Label>
                 <Select
                   value={newFrameAspectRatio}
-                  onValueChange={(v) => setNewFrameAspectRatio(v as AspectRatio)}
+                  onValueChange={(v) =>
+                    setNewFrameAspectRatio(v as AspectRatio)
+                  }
                 >
                   <SelectTrigger id="new-frame-aspect-ratio">
                     <SelectValue />
@@ -269,10 +274,7 @@ export function GeneratePanel({
           onOpenChange={setAssetModalOpen}
         />
 
-        <ApiKeyModal
-          open={apiKeyModalOpen}
-          onOpenChange={setApiKeyModalOpen}
-        />
+        <ApiKeyModal open={apiKeyModalOpen} onOpenChange={setApiKeyModalOpen} />
       </>
     );
   }
@@ -333,10 +335,7 @@ export function GeneratePanel({
         onSuccess={handleGenerationSuccess}
       />
 
-      <ApiKeyModal
-        open={apiKeyModalOpen}
-        onOpenChange={setApiKeyModalOpen}
-      />
+      <ApiKeyModal open={apiKeyModalOpen} onOpenChange={setApiKeyModalOpen} />
     </>
   );
 }

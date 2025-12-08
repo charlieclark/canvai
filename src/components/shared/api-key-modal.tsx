@@ -38,7 +38,8 @@ export function ApiKeyModal({
     onSuccess: () => {
       toast({
         title: "API key saved",
-        description: "Your Replicate API key has been saved. You can now generate images!",
+        description:
+          "Your Replicate API key has been saved. You can now generate images!",
       });
       setApiKey("");
       void utils.user.hasReplicateKey.invalidate();
@@ -91,7 +92,7 @@ export function ApiKeyModal({
                 rel="noopener noreferrer"
                 className="text-primary inline-flex items-center gap-1 font-medium underline underline-offset-4 hover:no-underline"
               >
-                Sign up for free
+                Sign up
                 <ExternalLink className="h-3 w-3" />
               </a>
             </p>
@@ -162,5 +163,3 @@ export function ApiKeyModal({
     </Dialog>
   );
 }
-
-

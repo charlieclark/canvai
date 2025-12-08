@@ -26,6 +26,19 @@ function requireReplicateApiKey(
   }
 }
 
+/**
+ * Check if an error is a Replicate 402 Insufficient Credit error
+ */
+function isInsufficientCreditError(error: unknown): boolean {
+  if (error instanceof Error) {
+    return (
+      error.message.includes("402") &&
+      error.message.includes("Insufficient credit")
+    );
+  }
+  return false;
+}
+
 // The model to use for frame generation - easy to swap out
 const frameModel = nanoBananaPro;
 // The model to use for asset generation (FLUX Schnell - fast)
@@ -132,6 +145,15 @@ export const generationRouter = createTRPCRouter({
           where: { id: generation.id },
           data: { status: "FAILED", errorMessage },
         });
+
+        // Check for insufficient credit error
+        if (isInsufficientCreditError(error)) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "REPLICATE_INSUFFICIENT_CREDIT",
+          });
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to start generation",
@@ -225,6 +247,15 @@ export const generationRouter = createTRPCRouter({
           where: { id: generation.id },
           data: { status: "FAILED", errorMessage },
         });
+
+        // Check for insufficient credit error
+        if (isInsufficientCreditError(error)) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "REPLICATE_INSUFFICIENT_CREDIT",
+          });
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to start asset generation",
