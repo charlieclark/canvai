@@ -40,4 +40,15 @@ export const userRouter = createTRPCRouter({
     });
     return { success: true };
   }),
+
+  /**
+   * Mark the user as interested in subscribing
+   */
+  markSubscriptionInterest: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db.user.update({
+      where: { id: ctx.user.id },
+      data: { subscriptionInterestAt: new Date() },
+    });
+    return { success: true };
+  }),
 });

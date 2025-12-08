@@ -8,6 +8,9 @@ model User {
   // API Keys
   replicateApiKey String? // User's personal Replicate API token
 
+  // Subscription Interest
+  subscriptionInterestAt DateTime? // When the user expressed interest in subscribing
+
   // Relations
   queuedEmails QueuedEmail[]
   projects     Project[]

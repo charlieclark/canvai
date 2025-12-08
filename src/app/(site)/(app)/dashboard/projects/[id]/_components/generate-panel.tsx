@@ -20,7 +20,7 @@ import {
   detectAspectRatio,
   type AspectRatio,
 } from "@/lib/utils/image";
-import { ApiKeyModal } from "@/components/shared/api-key-modal";
+import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 import { AssetGenerationModal } from "./asset-generation-modal";
 import { ConfirmGenerationModal } from "./confirm-generation-modal";
 
@@ -42,7 +42,8 @@ export function GeneratePanel({
     useState<AspectRatio>("1:1");
 
   // Modal states
-  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
+  const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
+    useState(false);
   const [assetModalOpen, setAssetModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmModalData, setConfirmModalData] = useState<{
@@ -149,7 +150,7 @@ export function GeneratePanel({
     if (!prompt.trim() || !editor || !selectedFrameId) return;
 
     if (!hasReplicateKey) {
-      setApiKeyModalOpen(true);
+      setGenerationOptionsModalOpen(true);
       return;
     }
 
@@ -163,7 +164,7 @@ export function GeneratePanel({
   // Handle asset button click
   const handleOpenAssetModal = () => {
     if (!hasReplicateKey) {
-      setApiKeyModalOpen(true);
+      setGenerationOptionsModalOpen(true);
       return;
     }
     setAssetModalOpen(true);
@@ -274,7 +275,10 @@ export function GeneratePanel({
           onOpenChange={setAssetModalOpen}
         />
 
-        <ApiKeyModal open={apiKeyModalOpen} onOpenChange={setApiKeyModalOpen} />
+        <GenerationOptionsModal
+          open={generationOptionsModalOpen}
+          onOpenChange={setGenerationOptionsModalOpen}
+        />
       </>
     );
   }
@@ -335,7 +339,10 @@ export function GeneratePanel({
         onSuccess={handleGenerationSuccess}
       />
 
-      <ApiKeyModal open={apiKeyModalOpen} onOpenChange={setApiKeyModalOpen} />
+      <GenerationOptionsModal
+        open={generationOptionsModalOpen}
+        onOpenChange={setGenerationOptionsModalOpen}
+      />
     </>
   );
 }
