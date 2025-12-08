@@ -96,8 +96,8 @@ export default function SettingsPage() {
             Replicate API Key
           </CardTitle>
           <CardDescription>
-            Your Replicate API key is used to generate images. You can get your
-            API key from the{" "}
+            You may add a Replicate API key to generate images without a
+            subscription. You can get your API key from the{" "}
             <a
               href="https://replicate.com/account/api-tokens"
               target="_blank"
@@ -112,7 +112,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {isCheckingKey ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Checking API key status...
             </div>
@@ -266,5 +266,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-

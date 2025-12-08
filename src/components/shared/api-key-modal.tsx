@@ -77,8 +77,9 @@ export function ApiKeyModal({
             Replicate API Key Required
           </DialogTitle>
           <DialogDescription>
-            To generate images, you need to add your Replicate API key. Your key
-            is stored securely and only used for your generations.
+            To generate images without a subscription, you need to add your
+            Replicate API key. Your key is stored securely and only used for
+            your generations.
           </DialogDescription>
         </DialogHeader>
 
