@@ -14,7 +14,8 @@ import {
 import { Sparkles, Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
 import { uploadImage } from "@/lib/utils/upload";
-import type { AspectRatio } from "@/lib/utils/image";
+import type { AspectRatio, Resolution } from "@/lib/utils/image";
+import { getGenerationDimensions } from "@/lib/utils/image";
 import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
 
 interface ConfirmGenerationModalProps {
@@ -24,6 +25,7 @@ interface ConfirmGenerationModalProps {
   prompt: string;
   previewUrl: string | null;
   aspectRatio: AspectRatio | null;
+  resolution: Resolution;
   onSuccess: () => void;
 }
 
@@ -34,6 +36,7 @@ export function ConfirmGenerationModal({
   prompt,
   previewUrl,
   aspectRatio,
+  resolution,
   onSuccess,
 }: ConfirmGenerationModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -80,6 +83,7 @@ export function ConfirmGenerationModal({
         projectId,
         prompt: prompt.trim(),
         aspectRatio,
+        resolution,
         referenceImage,
       });
     } catch (error) {
@@ -133,6 +137,22 @@ export function ConfirmGenerationModal({
           </p>
           <p className="text-sm">{prompt}</p>
         </div>
+
+        {/* Output Dimensions */}
+        {aspectRatio && (
+          <div className="space-y-1">
+            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Output Resolution
+            </p>
+            <p className="text-sm">
+              {getGenerationDimensions(aspectRatio, resolution).width} ×{" "}
+              {getGenerationDimensions(aspectRatio, resolution).height}px
+              <span className="text-muted-foreground ml-2">
+                ({resolution === 2 ? "2K" : "1K"})
+              </span>
+            </p>
+          </div>
+        )}
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button

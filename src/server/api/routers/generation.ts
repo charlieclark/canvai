@@ -8,28 +8,32 @@ import {
   imagenFast,
 } from "@/server/ai/replicate";
 import { downloadAndUploadImage } from "@/server/utils/upload";
-import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
+import {
+  ASPECT_RATIOS,
+  getGenerationDimensions,
+  DEFAULT_RESOLUTION,
+  type AspectRatio,
+  type Resolution,
+} from "@/lib/utils/image";
 import { isArray } from "lodash";
 import { refreshCreditsIfNeeded, deductCredit, refundCredit } from "./billing";
 import type { db } from "@/server/db";
 
 /**
- * Helper to check if user can generate (has subscription credits OR own API key)
+ * Helper to check if user can generate (has credits OR own API key)
  * Returns the API key to use and whether credits should be deducted
  */
 async function checkGenerationAccess(
   database: typeof db,
   user: { id: string; replicateApiKey: string | null; plan: string },
 ): Promise<{ apiKey: string; useCredits: boolean }> {
-  // First, check if user has active subscription with credits
-  if (user.plan === "SUBSCRIBED") {
-    const result = await refreshCreditsIfNeeded(database, user.id);
-    if (result.hasCredits) {
-      // Use platform API key for subscribers (via env)
-      const platformKey = process.env.REPLICATE_API_TOKEN;
-      if (platformKey) {
-        return { apiKey: platformKey, useCredits: true };
-      }
+  // Check if user has credits (works for both FREE and SUBSCRIBED users)
+  const result = await refreshCreditsIfNeeded(database, user.id);
+  if (result.hasCredits) {
+    // Use platform API key for users with credits
+    const platformKey = process.env.REPLICATE_API_TOKEN;
+    if (platformKey) {
+      return { apiKey: platformKey, useCredits: true };
     }
   }
 
@@ -63,19 +67,13 @@ const frameModel = nanoBananaPro;
 // The model to use for asset generation (FLUX Schnell - fast)
 const assetModel = imagenFast;
 
-// Build schema and dimensions map from shared ASPECT_RATIOS constant
+// Build schema from shared ASPECT_RATIOS constant
 const aspectRatioValues = ASPECT_RATIOS.map((r) => r.value) as [
   AspectRatio,
   ...AspectRatio[],
 ];
 const aspectRatioSchema = z.enum(aspectRatioValues);
-
-const ASPECT_RATIO_DIMENSIONS: Record<
-  AspectRatio,
-  { width: number; height: number }
-> = Object.fromEntries(
-  ASPECT_RATIOS.map((r) => [r.value, { width: r.width, height: r.height }]),
-) as Record<AspectRatio, { width: number; height: number }>;
+const resolutionSchema = z.union([z.literal(1), z.literal(2)]) as z.ZodType<Resolution>;
 
 export const generationRouter = createTRPCRouter({
   /**
@@ -112,6 +110,7 @@ export const generationRouter = createTRPCRouter({
         projectId: z.string(),
         prompt: z.string().min(1).max(2000),
         aspectRatio: aspectRatioSchema,
+        resolution: resolutionSchema.optional().default(DEFAULT_RESOLUTION),
         referenceImage: z.string().optional(), // Base64 data URL from frame export
       }),
     )
@@ -142,7 +141,7 @@ export const generationRouter = createTRPCRouter({
         });
       }
 
-      const dimensions = ASPECT_RATIO_DIMENSIONS[input.aspectRatio];
+      const dimensions = getGenerationDimensions(input.aspectRatio, input.resolution);
 
       // Create generation record
       const generation = await ctx.db.generation.create({
@@ -251,8 +250,8 @@ export const generationRouter = createTRPCRouter({
         });
       }
 
-      // Assets are always 1:1 square
-      const dimensions = ASPECT_RATIO_DIMENSIONS["1:1"];
+      // Assets are always 1:1 square at default resolution
+      const dimensions = getGenerationDimensions("1:1", DEFAULT_RESOLUTION);
 
       // Create generation record
       const generation = await ctx.db.generation.create({

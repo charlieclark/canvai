@@ -6,6 +6,7 @@ import {
   DefaultStylePanel,
   DefaultStylePanelContent,
   DefaultFontStyle,
+  DefaultSizeStyle,
   FrameShapeUtil,
   type Editor,
   type TLShapeId,
@@ -184,8 +185,9 @@ export function ProjectCanvas({
 
       editor.zoomToFit();
 
-      // Set default font to sans-serif
+      // Set default styles
       editor.setStyleForNextShapes(DefaultFontStyle, "sans");
+      editor.setStyleForNextShapes(DefaultSizeStyle, "l");
 
       // Listen for changes to save
       const removeListener = editor.store.listen(

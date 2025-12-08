@@ -17,8 +17,13 @@ import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import {
   ASPECT_RATIOS,
+  RESOLUTIONS,
+  DEFAULT_RESOLUTION,
   detectAspectRatio,
+  detectResolution,
+  getGenerationDimensions,
   type AspectRatio,
+  type Resolution,
 } from "@/lib/utils/image";
 import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 import { AssetGenerationModal } from "./asset-generation-modal";
@@ -40,6 +45,7 @@ export function GeneratePanel({
   const [prompt, setPrompt] = useState("");
   const [newFrameAspectRatio, setNewFrameAspectRatio] =
     useState<AspectRatio>("1:1");
+  const [resolution, setResolution] = useState<Resolution>(DEFAULT_RESOLUTION);
 
   // Modal states
   const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
@@ -49,6 +55,7 @@ export function GeneratePanel({
   const [confirmModalData, setConfirmModalData] = useState<{
     previewUrl: string;
     aspectRatio: AspectRatio;
+    resolution: Resolution;
   } | null>(null);
 
   // Get credits status (includes subscription info and API key status)
@@ -65,8 +72,10 @@ export function GeneratePanel({
     const ratio = ASPECT_RATIOS.find((r) => r.value === newFrameAspectRatio);
     if (!ratio) return;
 
-    const displayWidth = ratio.width * FRAME_DISPLAY_SCALE;
-    const displayHeight = ratio.height * FRAME_DISPLAY_SCALE;
+    // Use resolution-based dimensions for the frame
+    const dimensions = getGenerationDimensions(newFrameAspectRatio, resolution);
+    const displayWidth = dimensions.width * FRAME_DISPLAY_SCALE;
+    const displayHeight = dimensions.height * FRAME_DISPLAY_SCALE;
 
     const existingFrames = editor
       .getCurrentPageShapes()
@@ -106,6 +115,7 @@ export function GeneratePanel({
 
     const frameId = `shape:frame-${Date.now()}` as TLShapeId;
 
+    const resolutionLabel = resolution === 2 ? "2K" : "1K";
     editor.createShape({
       id: frameId,
       type: "frame",
@@ -114,7 +124,7 @@ export function GeneratePanel({
       props: {
         w: displayWidth,
         h: displayHeight,
-        name: `${ratio.label}`,
+        name: `${ratio.label} - ${resolutionLabel}`,
       },
     });
 
@@ -135,6 +145,11 @@ export function GeneratePanel({
         bounds.width,
         bounds.height,
       );
+      const detectedRes = detectResolution(
+        bounds.width,
+        bounds.height,
+        detectedAspectRatio,
+      );
 
       const { blob } = await editor.toImage([selectedFrameId], {
         format: "webp",
@@ -143,7 +158,7 @@ export function GeneratePanel({
       });
 
       const url = URL.createObjectURL(blob);
-      return { previewUrl: url, aspectRatio: detectedAspectRatio };
+      return { previewUrl: url, aspectRatio: detectedAspectRatio, resolution: detectedRes };
     } catch (error) {
       console.error("Failed to export frame:", error);
       return null;
@@ -193,14 +208,22 @@ export function GeneratePanel({
     setConfirmModalOpen(open);
   };
 
-  // Get current frame info
+  // Get current frame info including detected resolution
   const getFrameInfo = () => {
     if (!editor || !selectedFrameId) return null;
     const shape = editor.getShape(selectedFrameId);
     if (shape?.type !== "frame") return null;
     const bounds = editor.getShapeGeometry(shape).bounds;
     const detectedRatio = detectAspectRatio(bounds.width, bounds.height);
-    return ASPECT_RATIOS.find((r) => r.value === detectedRatio);
+    const detectedRes = detectResolution(bounds.width, bounds.height, detectedRatio);
+    const aspectRatioInfo = ASPECT_RATIOS.find((r) => r.value === detectedRatio);
+    if (!aspectRatioInfo) return null;
+    return {
+      ...aspectRatioInfo,
+      resolution: detectedRes,
+      outputWidth: getGenerationDimensions(detectedRatio, detectedRes).width,
+      outputHeight: getGenerationDimensions(detectedRatio, detectedRes).height,
+    };
   };
 
   // Credits display component
@@ -263,8 +286,28 @@ export function GeneratePanel({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="resolution">Resolution</Label>
+                <Select
+                  value={String(resolution)}
+                  onValueChange={(v) => setResolution(Number(v) as Resolution)}
+                >
+                  <SelectTrigger id="resolution">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESOLUTIONS.map((res) => (
+                      <SelectItem key={res.value} value={String(res.value)}>
+                        {res.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-muted-foreground text-xs">
-                  {selectedRatio?.width} × {selectedRatio?.height}px
+                  {selectedRatio &&
+                    `${getGenerationDimensions(newFrameAspectRatio, resolution).width} × ${getGenerationDimensions(newFrameAspectRatio, resolution).height}px`}
                 </p>
               </div>
 
@@ -314,7 +357,7 @@ export function GeneratePanel({
             <h2 className="font-semibold">Generate</h2>
             {frameInfo && (
               <p className="text-muted-foreground text-xs">
-                {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
+                {frameInfo.label} • {frameInfo.resolution === 2 ? "2K" : "1K"} ({frameInfo.outputWidth}×{frameInfo.outputHeight})
               </p>
             )}
           </div>
@@ -359,6 +402,7 @@ export function GeneratePanel({
         prompt={prompt}
         previewUrl={confirmModalData?.previewUrl ?? null}
         aspectRatio={confirmModalData?.aspectRatio ?? null}
+        resolution={confirmModalData?.resolution ?? DEFAULT_RESOLUTION}
         onSuccess={handleGenerationSuccess}
       />
 
