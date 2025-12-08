@@ -48,7 +48,7 @@ const ASPECT_RATIO_DIMENSIONS: Record<
 export const generationRouter = createTRPCRouter({
   /**
    * Start a new frame generation
-   * Accepts a frame export as a reference image (base64 data URL)
+   * Accepts a frame export as a r
    */
   create: protectedProcedure
     .input(
@@ -121,11 +121,16 @@ export const generationRouter = createTRPCRouter({
         });
 
         return { generationId: generation.id, replicateId: prediction.id };
-      } catch {
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to start generation";
+        console.error(`[Generation ${generation.id}] Failed to start`, {
+          error,
+        });
         // Mark as failed if we couldn't start
         await ctx.db.generation.update({
           where: { id: generation.id },
-          data: { status: "FAILED" },
+          data: { status: "FAILED", errorMessage },
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -207,11 +212,18 @@ export const generationRouter = createTRPCRouter({
         });
 
         return { generationId: generation.id, replicateId: prediction.id };
-      } catch {
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to start asset generation";
+        console.error(`[Generation ${generation.id}] Failed to start asset`, {
+          error,
+        });
         // Mark as failed if we couldn't start
         await ctx.db.generation.update({
           where: { id: generation.id },
-          data: { status: "FAILED" },
+          data: { status: "FAILED", errorMessage },
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -283,10 +295,16 @@ export const generationRouter = createTRPCRouter({
               });
               return updated;
             } else {
+              const errorMessage = "Failed to download and upload generated image";
+              console.error(
+                `[Generation ${generation.id}] ${errorMessage}`,
+                { replicateId: generation.replicateId, output },
+              );
               const updated = await ctx.db.generation.update({
                 where: { id: generation.id },
                 data: {
                   status: "FAILED",
+                  errorMessage,
                 },
               });
               return updated;
@@ -295,14 +313,39 @@ export const generationRouter = createTRPCRouter({
             prediction.status === "failed" ||
             prediction.status === "canceled"
           ) {
+            const errorMessage =
+              prediction.error ??
+              `Generation ${prediction.status === "canceled" ? "was canceled" : "failed"}`;
+            console.error(
+              `[Generation ${generation.id}] Replicate prediction ${prediction.status}`,
+              { replicateId: generation.replicateId, error: prediction.error },
+            );
             const updated = await ctx.db.generation.update({
               where: { id: generation.id },
-              data: { status: "FAILED" },
+              data: {
+                status: "FAILED",
+                errorMessage,
+              },
             });
             return updated;
           }
         } catch (pollError) {
-          console.error("Error polling generation:", pollError);
+          const errorMessage =
+            pollError instanceof Error
+              ? pollError.message
+              : "Unknown error while polling generation status";
+          console.error(
+            `[Generation ${generation.id}] Error polling Replicate`,
+            { replicateId: generation.replicateId, error: pollError },
+          );
+          const updated = await ctx.db.generation.update({
+            where: { id: generation.id },
+            data: {
+              status: "FAILED",
+              errorMessage,
+            },
+          });
+          return updated;
         }
       }
 
