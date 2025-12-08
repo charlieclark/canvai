@@ -15,5 +15,5 @@ export async function GET(request: NextRequest) {
 
   await api.billing.confirmCheckout({ checkoutId });
 
-  redirect("/dashboard/credits");
+  redirect("/dashboard?subscribed=true");
 }

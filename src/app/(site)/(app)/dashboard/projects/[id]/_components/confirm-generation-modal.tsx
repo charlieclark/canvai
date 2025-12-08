@@ -46,6 +46,7 @@ export function ConfirmGenerationModal({
     onSuccess: () => {
       void utils.generation.list.invalidate({ projectId });
       void utils.project.getById.invalidate({ id: projectId });
+      void utils.generation.getCreditsStatus.invalidate(); // Refresh credits
       setIsGenerating(false);
       onOpenChange(false);
       onSuccess();

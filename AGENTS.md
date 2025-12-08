@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+> **Note:** This project is based on the boilerplate at `/Users/charlie/Sites/PROJECTS/boilerplate`. Any important general architecture decisions or guidelines added here should also be reflected in the boilerplate's AGENTS.md to keep them in sync.
+
 ## Project Structure & Module Organization
 - `src/app` contains Next.js App Router entries, layouts, and metadata.
 - `src/components` hosts reusable UI; primitives live under `ui/`, while folders like `form/` and `navigation/` wrap them into features.
@@ -35,6 +37,12 @@
 - Copy `.env.example` to `.env.local`, filling Clerk, Stripe, and database credentials.
 - Use `start-database.sh` to launch the local Postgres service; rerun `npm run db:reset` when migrations drift.
 - Let `postinstall` regenerate Prisma clients; do not commit generated artifacts.
+
+### Database Migrations (IMPORTANT)
+- **NEVER use `prisma db push`** - it can cause data loss and doesn't create migration files.
+- **ALWAYS use `npm run db:generate -- --name="descriptive-name"`** to create and apply migrations.
+- If `prisma migrate dev` fails due to non-interactive environment, ask the user to run it manually rather than falling back to `db push`.
+- Migration names should be descriptive (e.g., `add-subscription-fields`, `create-user-table`).
 
 ## Patterns for AI Coding Tools
 

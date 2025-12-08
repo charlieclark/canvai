@@ -10,20 +10,39 @@ import {
 import { downloadAndUploadImage } from "@/server/utils/upload";
 import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
 import { isArray } from "lodash";
+import { refreshCreditsIfNeeded, deductCredit, refundCredit } from "./billing";
+import type { db } from "@/server/db";
 
 /**
- * Helper to get the user's Replicate API key
- * Throws an error if no key is configured
+ * Helper to check if user can generate (has subscription credits OR own API key)
+ * Returns the API key to use and whether credits should be deducted
  */
-function requireReplicateApiKey(
-  replicateApiKey: string | null,
-): asserts replicateApiKey is string {
-  if (!replicateApiKey) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "REPLICATE_KEY_REQUIRED",
-    });
+async function checkGenerationAccess(
+  database: typeof db,
+  user: { id: string; replicateApiKey: string | null; plan: string },
+): Promise<{ apiKey: string; useCredits: boolean }> {
+  // First, check if user has active subscription with credits
+  if (user.plan === "SUBSCRIBED") {
+    const result = await refreshCreditsIfNeeded(database, user.id);
+    if (result.hasCredits) {
+      // Use platform API key for subscribers (via env)
+      const platformKey = process.env.REPLICATE_API_TOKEN;
+      if (platformKey) {
+        return { apiKey: platformKey, useCredits: true };
+      }
+    }
   }
+
+  // Fall back to user's own API key
+  if (user.replicateApiKey) {
+    return { apiKey: user.replicateApiKey, useCredits: false };
+  }
+
+  // No credits and no API key
+  throw new TRPCError({
+    code: "PRECONDITION_FAILED",
+    message: "REPLICATE_KEY_REQUIRED",
+  });
 }
 
 /**
@@ -60,8 +79,32 @@ const ASPECT_RATIO_DIMENSIONS: Record<
 
 export const generationRouter = createTRPCRouter({
   /**
+   * Get the user's credits status for UI display
+   */
+  getCreditsStatus: protectedProcedure.query(async ({ ctx }) => {
+    const { hasCredits, credits, plan } = await refreshCreditsIfNeeded(
+      ctx.db,
+      ctx.user.id,
+    );
+
+    // Refetch user to get updated creditsPeriodEnd
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.user.id },
+      select: { creditsPeriodEnd: true, replicateApiKey: true },
+    });
+
+    return {
+      plan,
+      credits,
+      hasCredits,
+      creditsPeriodEnd: user?.creditsPeriodEnd ?? null,
+      hasOwnApiKey: !!user?.replicateApiKey,
+    };
+  }),
+
+  /**
    * Start a new frame generation
-   * Accepts a frame export as a r
+   * Accepts a frame export as a reference
    */
   create: protectedProcedure
     .input(
@@ -73,8 +116,11 @@ export const generationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Check for Replicate API key
-      requireReplicateApiKey(ctx.user.replicateApiKey);
+      // Check generation access (subscription credits or own API key)
+      const { apiKey, useCredits } = await checkGenerationAccess(
+        ctx.db,
+        ctx.user,
+      );
 
       // Verify project ownership
       const project = await ctx.db.project.findUnique({
@@ -112,7 +158,7 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start image generation with user's API key
+        // Start image generation
         const prediction = await startGeneration(
           frameModel,
           {
@@ -121,15 +167,21 @@ export const generationRouter = createTRPCRouter({
             width: dimensions.width,
             height: dimensions.height,
           },
-          ctx.user.replicateApiKey,
+          apiKey,
         );
 
-        // Update with replicate ID
+        // Deduct credit if using subscription
+        if (useCredits) {
+          await deductCredit(ctx.db, ctx.user.id);
+        }
+
+        // Update with replicate ID and track credit usage
         await ctx.db.generation.update({
           where: { id: generation.id },
           data: {
             replicateId: prediction.id,
             status: "PROCESSING",
+            usedCredits: useCredits,
           },
         });
 
@@ -173,8 +225,11 @@ export const generationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Check for Replicate API key
-      requireReplicateApiKey(ctx.user.replicateApiKey);
+      // Check generation access (subscription credits or own API key)
+      const { apiKey, useCredits } = await checkGenerationAccess(
+        ctx.db,
+        ctx.user,
+      );
 
       // Verify project ownership
       const project = await ctx.db.project.findUnique({
@@ -213,7 +268,7 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start image generation with Imagen 4 Fast using user's API key
+        // Start image generation with Imagen 4 Fast
         const prediction = await startGeneration(
           assetModel,
           {
@@ -221,15 +276,21 @@ export const generationRouter = createTRPCRouter({
             width: dimensions.width,
             height: dimensions.height,
           },
-          ctx.user.replicateApiKey,
+          apiKey,
         );
 
-        // Update with replicate ID
+        // Deduct credit if using subscription
+        if (useCredits) {
+          await deductCredit(ctx.db, ctx.user.id);
+        }
+
+        // Update with replicate ID and track credit usage
         await ctx.db.generation.update({
           where: { id: generation.id },
           data: {
             replicateId: prediction.id,
             status: "PROCESSING",
+            usedCredits: useCredits,
           },
         });
 
@@ -269,8 +330,8 @@ export const generationRouter = createTRPCRouter({
   getStatus: protectedProcedure
     .input(z.object({ generationId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Check for Replicate API key (needed for polling)
-      requireReplicateApiKey(ctx.user.replicateApiKey);
+      // Get API key for polling (subscription or user's own)
+      const { apiKey } = await checkGenerationAccess(ctx.db, ctx.user);
 
       const generation = await ctx.db.generation.findUnique({
         where: { id: input.generationId },
@@ -303,10 +364,7 @@ export const generationRouter = createTRPCRouter({
       // Poll Replicate if we have an ID
       if (generation.replicateId) {
         try {
-          const prediction = await getPrediction(
-            generation.replicateId,
-            ctx.user.replicateApiKey,
-          );
+          const prediction = await getPrediction(generation.replicateId, apiKey);
 
           const output = isArray(prediction.output)
             ? prediction.output[0]
@@ -331,11 +389,16 @@ export const generationRouter = createTRPCRouter({
                 `[Generation ${generation.id}] ${errorMessage}`,
                 { replicateId: generation.replicateId, output },
               );
+              // Refund credit if this generation used credits
+              if (generation.usedCredits) {
+                await refundCredit(ctx.db, ctx.user.id);
+              }
               const updated = await ctx.db.generation.update({
                 where: { id: generation.id },
                 data: {
                   status: "FAILED",
                   errorMessage,
+                  usedCredits: false, // Mark as refunded
                 },
               });
               return updated;
@@ -351,11 +414,16 @@ export const generationRouter = createTRPCRouter({
               `[Generation ${generation.id}] Replicate prediction ${prediction.status}`,
               { replicateId: generation.replicateId, error: prediction.error },
             );
+            // Refund credit if this generation used credits
+            if (generation.usedCredits) {
+              await refundCredit(ctx.db, ctx.user.id);
+            }
             const updated = await ctx.db.generation.update({
               where: { id: generation.id },
               data: {
                 status: "FAILED",
                 errorMessage,
+                usedCredits: false, // Mark as refunded
               },
             });
             return updated;
@@ -369,11 +437,16 @@ export const generationRouter = createTRPCRouter({
             `[Generation ${generation.id}] Error polling Replicate`,
             { replicateId: generation.replicateId, error: pollError },
           );
+          // Refund credit if this generation used credits
+          if (generation.usedCredits) {
+            await refundCredit(ctx.db, ctx.user.id);
+          }
           const updated = await ctx.db.generation.update({
             where: { id: generation.id },
             data: {
               status: "FAILED",
               errorMessage,
+              usedCredits: false, // Mark as refunded
             },
           });
           return updated;

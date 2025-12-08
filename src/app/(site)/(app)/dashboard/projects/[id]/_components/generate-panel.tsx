@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Frame, Plus, ImageIcon } from "lucide-react";
+import { Sparkles, Frame, Plus, ImageIcon, Coins } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import {
@@ -51,7 +51,12 @@ export function GeneratePanel({
     aspectRatio: AspectRatio;
   } | null>(null);
 
-  const { data: hasReplicateKey } = api.user.hasReplicateKey.useQuery();
+  // Get credits status (includes subscription info and API key status)
+  const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
+  
+  // User can generate if they have credits OR their own API key
+  const canGenerate =
+    creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
 
   // Create a new frame on the canvas
   const handleCreateFrame = () => {
@@ -149,7 +154,7 @@ export function GeneratePanel({
   const handleGenerateClick = async () => {
     if (!prompt.trim() || !editor || !selectedFrameId) return;
 
-    if (!hasReplicateKey) {
+    if (!canGenerate) {
       setGenerationOptionsModalOpen(true);
       return;
     }
@@ -163,7 +168,7 @@ export function GeneratePanel({
 
   // Handle asset button click
   const handleOpenAssetModal = () => {
-    if (!hasReplicateKey) {
+    if (!canGenerate) {
       setGenerationOptionsModalOpen(true);
       return;
     }
@@ -198,6 +203,20 @@ export function GeneratePanel({
     return ASPECT_RATIOS.find((r) => r.value === detectedRatio);
   };
 
+  // Credits display component
+  const CreditsDisplay = () => {
+    if (creditsStatus?.plan !== "SUBSCRIBED") return null;
+    
+    return (
+      <div className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950">
+        <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <span className="font-medium text-amber-900 dark:text-amber-100">
+          {creditsStatus.credits} credits
+        </span>
+      </div>
+    );
+  };
+
   // Empty state - no frame selected
   if (!selectedFrameId) {
     const selectedRatio = ASPECT_RATIOS.find(
@@ -207,8 +226,9 @@ export function GeneratePanel({
     return (
       <>
         <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
-          <div className="border-b p-4">
+          <div className="space-y-2 border-b p-4">
             <h2 className="font-semibold">Generate</h2>
+            <CreditsDisplay />
           </div>
 
           <div className="flex flex-1 flex-col p-6">
@@ -289,13 +309,16 @@ export function GeneratePanel({
   return (
     <>
       <div className="bg-muted/30 flex h-full w-80 flex-col border-l">
-        <div className="border-b p-4">
-          <h2 className="font-semibold">Generate</h2>
-          {frameInfo && (
-            <p className="text-muted-foreground text-xs">
-              {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
-            </p>
-          )}
+        <div className="space-y-2 border-b p-4">
+          <div>
+            <h2 className="font-semibold">Generate</h2>
+            {frameInfo && (
+              <p className="text-muted-foreground text-xs">
+                {frameInfo.label} ({frameInfo.width}×{frameInfo.height})
+              </p>
+            )}
+          </div>
+          <CreditsDisplay />
         </div>
 
         <ScrollArea className="flex-1">

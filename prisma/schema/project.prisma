@@ -25,6 +25,7 @@ model Generation {
   type         GenerationType   @default(FRAME)
   replicateId  String? // For polling status
   errorMessage String? // Error details when status is FAILED
+  usedCredits  Boolean          @default(false) // Whether subscription credits were used
 
   @@index([projectId])
 }

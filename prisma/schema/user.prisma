@@ -11,6 +11,12 @@ model User {
   // Subscription Interest
   subscriptionInterestAt DateTime? // When the user expressed interest in subscribing
 
+  // Subscription
+  stripeCustomerId String?   @unique
+  plan             Plan      @default(FREE)
+  credits          Int       @default(0)
+  creditsPeriodEnd DateTime? // When current credit period ends
+
   // Relations
   queuedEmails QueuedEmail[]
   projects     Project[]
@@ -19,4 +25,9 @@ model User {
 enum Role {
   MEMBER
   ADMIN
+}
+
+enum Plan {
+  FREE
+  SUBSCRIBED
 }

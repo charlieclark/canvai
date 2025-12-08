@@ -2,18 +2,24 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { Folder, Menu, Rocket, Settings } from "lucide-react";
+import { Folder, Menu, Settings, Sparkles, Coins, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { api } from "@/trpc/react";
 
 const navigation = [
   {
     name: "Projects",
     href: "/dashboard/projects",
     icon: Folder,
+  },
+  {
+    name: "Billing",
+    href: "/dashboard/billing",
+    icon: CreditCard,
   },
   {
     name: "Settings",
@@ -56,6 +62,61 @@ function isProjectDetailPage(pathname: string) {
   return /^\/dashboard\/projects\/[^/]+$/.test(pathname);
 }
 
+function CreditsCard() {
+  const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
+
+  if (!creditsStatus) return null;
+
+  // Subscribed user - show credits remaining
+  if (creditsStatus.plan === "SUBSCRIBED") {
+    const periodEnd = creditsStatus.creditsPeriodEnd
+      ? new Date(creditsStatus.creditsPeriodEnd).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
+      : null;
+
+    return (
+      <div className="rounded-lg border bg-gradient-to-br from-amber-50 to-orange-50 p-4 dark:from-amber-950/50 dark:to-orange-950/50">
+        <div className="mb-2 flex items-center gap-2">
+          <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <span className="text-sm font-medium text-amber-900 dark:text-amber-100">
+            Credits
+          </span>
+        </div>
+        <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+          {creditsStatus.credits}
+        </p>
+        {periodEnd && (
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+            Resets {periodEnd}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Free user - show upgrade CTA
+  return (
+    <div className="rounded-lg border bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 dark:from-violet-950/50 dark:to-fuchsia-950/50">
+      <div className="mb-2 flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+        <span className="text-sm font-medium text-violet-900 dark:text-violet-100">
+          Upgrade
+        </span>
+      </div>
+      <p className="mb-3 text-sm text-violet-700 dark:text-violet-300">
+        Get 200 credits/month and skip the API setup.
+      </p>
+      <Button size="sm" className="w-full" asChild>
+        <Link href="/dashboard/billing">
+          Subscribe for $20/mo
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 export function AdminSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -89,6 +150,10 @@ export function AdminSidebar() {
             onClick={handleNavItemClick}
           />
         ))}
+      </div>
+
+      <div className="border-t p-4">
+        <CreditsCard />
       </div>
     </div>
   );

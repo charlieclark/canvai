@@ -38,6 +38,7 @@ export function AssetGenerationModal({
     onSuccess: () => {
       void utils.generation.list.invalidate({ projectId });
       void utils.project.getById.invalidate({ id: projectId });
+      void utils.generation.getCreditsStatus.invalidate(); // Refresh credits
       setPrompt("");
       setIsGenerating(false);
       onOpenChange(false);
