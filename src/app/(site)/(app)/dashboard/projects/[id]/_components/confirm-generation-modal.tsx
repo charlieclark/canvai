@@ -73,7 +73,7 @@ export function ConfirmGenerationModal({
     try {
       const response = await fetch(previewUrl);
       const blob = await response.blob();
-      const file = new File([blob], `frame-${Date.now()}.png`, {
+      const file = new File([blob], `frame-${Date.now()}.webp`, {
         type: "image/webp",
       });
 
@@ -118,68 +118,66 @@ export function ConfirmGenerationModal({
             </DialogDescription>
           </DialogHeader>
 
-        {/* Preview Image */}
-        {previewUrl && (
-          <div className="bg-muted relative aspect-square w-full overflow-hidden rounded-lg border">
-            <Image
-              src={previewUrl}
-              alt="Frame preview"
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
+          {/* Preview Image */}
+          {previewUrl && (
+            <div className="bg-muted relative aspect-square w-full overflow-hidden rounded-lg border">
+              <Image
+                src={previewUrl}
+                alt="Frame preview"
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
 
-        {/* Prompt Preview */}
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-            Prompt
-          </p>
-          <p className="text-sm">{prompt}</p>
-        </div>
-
-        {/* Output Dimensions */}
-        {aspectRatio && (
+          {/* Prompt Preview */}
           <div className="space-y-1">
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Output Resolution
+            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Prompt
             </p>
-            <p className="text-sm">
-              {getGenerationDimensions(aspectRatio, resolution).width} ×{" "}
-              {getGenerationDimensions(aspectRatio, resolution).height}px
-              <span className="text-muted-foreground ml-2">
-                ({resolution === 2 ? "2K" : "1K"})
-              </span>
-            </p>
+            <p className="text-sm">{prompt}</p>
           </div>
-        )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={() => handleClose(false)}
-            disabled={isGenerating}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleConfirm} disabled={isGenerating}>
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Generate
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {/* Output Dimensions */}
+          {aspectRatio && (
+            <div className="space-y-1">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Output Resolution
+              </p>
+              <p className="text-sm">
+                {getGenerationDimensions(aspectRatio, resolution).width} ×{" "}
+                {getGenerationDimensions(aspectRatio, resolution).height}px
+                <span className="text-muted-foreground ml-2">
+                  ({resolution === 2 ? "2K" : "1K"})
+                </span>
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => handleClose(false)}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirm} disabled={isGenerating}>
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-
