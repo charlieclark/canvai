@@ -73,8 +73,8 @@ export function ConfirmGenerationModal({
     try {
       const response = await fetch(previewUrl);
       const blob = await response.blob();
-      const file = new File([blob], `frame-${Date.now()}.webp`, {
-        type: "image/webp",
+      const file = new File([blob], `frame-${Date.now()}.jpg`, {
+        type: "image/jpeg",
       });
 
       const referenceImage = await uploadImage(file);

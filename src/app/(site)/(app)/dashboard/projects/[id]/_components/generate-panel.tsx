@@ -152,7 +152,7 @@ export function GeneratePanel({
       );
 
       const { blob } = await editor.toImage([selectedFrameId], {
-        format: "webp",
+        format: "jpeg",
         background: true,
         quality: 100,
       });
