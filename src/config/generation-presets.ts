@@ -15,42 +15,42 @@ export const STYLE_PRESETS: StylePreset[] = [
     label: "Auto",
     description: "Automatically match the style from the reference",
     promptModifier:
-      "match and enhance the visual style present in the reference, maintaining consistency with its aesthetic",
+      "Match and enhance the visual style present in the reference, maintaining consistency with its aesthetic. If there are multiple styles, pick the dominant style and apply it cohesively to all elements.",
   },
   {
     id: "cinematic",
     label: "Cinematic",
     description: "Movie-like dramatic lighting and atmosphere",
     promptModifier:
-      "cinematic lighting, dramatic atmosphere, movie scene aesthetic, professional photography",
+      "Cinematic lighting, dramatic atmosphere, movie scene aesthetic, professional photography",
   },
   {
     id: "anime",
     label: "Anime",
     description: "Japanese animation style with cel shading",
     promptModifier:
-      "anime style, Japanese animation aesthetic, cel shading, vibrant colors",
+      "Anime style, Japanese animation aesthetic, cel shading, vibrant colors",
   },
   {
     id: "oil-painting",
     label: "Oil Painting",
     description: "Classical painting with textured brushstrokes",
     promptModifier:
-      "oil painting style, textured brushstrokes, classical art technique, rich colors",
+      "Oil painting style, textured brushstrokes, classical art technique, rich colors",
   },
   {
     id: "pixel-art",
     label: "Pixel Art",
     description: "Retro 8-bit game graphics aesthetic",
     promptModifier:
-      "pixel art style, 8-bit aesthetic, retro game graphics, limited color palette",
+      "Pixel art style, 8-bit aesthetic, retro game graphics, limited color palette",
   },
   {
     id: "watercolor",
     label: "Watercolor",
     description: "Soft washes and transparent layers",
     promptModifier:
-      "watercolor painting, soft washes, transparent layers, artistic flow",
+      "Watercolor painting, soft washes, transparent layers, artistic flow",
   },
   {
     id: "3d-render",
@@ -64,14 +64,14 @@ export const STYLE_PRESETS: StylePreset[] = [
     label: "Sketch",
     description: "Hand-drawn pencil illustration style",
     promptModifier:
-      "pencil sketch style, hand-drawn illustration, line art, graphite texture",
+      "Pencil sketch style, hand-drawn illustration, line art, graphite texture",
   },
   {
     id: "neon",
     label: "Neon",
     description: "Cyberpunk aesthetic with glowing colors",
     promptModifier:
-      "neon lights, cyberpunk aesthetic, glowing colors, dark background with bright accents",
+      "Neon lights, cyberpunk aesthetic, glowing colors, dark background with bright accents",
   },
 ];
 

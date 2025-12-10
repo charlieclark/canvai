@@ -14,7 +14,7 @@ model User {
   // Subscription
   stripeCustomerId String?   @unique
   plan             Plan      @default(FREE)
-  credits          Int       @default(0) // New users get 3 free credits
+  credits          Int       @default(2) // New users get 3 free credits
   creditsPeriodEnd DateTime? // When current credit period ends
 
   // Relations
