@@ -15,7 +15,10 @@ export const env = createEnv({
     BLOB_READ_WRITE_TOKEN: z.string(),
     RESEND_API_KEY: z.string(),
     OPENAI_API_KEY: z.string(),
-    REPLICATE_API_TOKEN: z.string().optional(), // Optional - users provide their own keys
+    // Image generation provider configuration
+    IMAGE_PROVIDER: z.enum(["fal", "replicate"]).default("fal"),
+    FAL_API_KEY: z.string().optional(), // Platform fal.ai key
+    REPLICATE_API_TOKEN: z.string().optional(), // Platform Replicate key (legacy)
     STRIPE_PRIVATE_KEY: z.string(),
     STRIPE_PRICE: z.string(),
   },
@@ -40,6 +43,8 @@ export const env = createEnv({
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    IMAGE_PROVIDER: process.env.IMAGE_PROVIDER,
+    FAL_API_KEY: process.env.FAL_API_KEY,
     REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,
     STRIPE_PRIVATE_KEY: process.env.STRIPE_PRIVATE_KEY,
     STRIPE_PRICE: process.env.STRIPE_PRICE,

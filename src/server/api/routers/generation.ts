@@ -4,9 +4,20 @@ import { TRPCError } from "@trpc/server";
 import {
   startGeneration,
   getPrediction,
+  getDefaultProvider,
   nanoBananaPro,
   imagenFast,
-} from "@/server/ai/replicate";
+  type ImageProvider,
+} from "@/server/ai";
+
+/**
+ * Detect the provider from a prediction ID
+ * fal.ai IDs contain "::" (e.g., "model-id::request-id")
+ * Replicate IDs are plain UUIDs
+ */
+function detectProviderFromPredictionId(predictionId: string): ImageProvider {
+  return predictionId.includes("::") ? "fal" : "replicate";
+}
 import { downloadAndUploadImage } from "@/server/utils/upload";
 import {
   ASPECT_RATIOS,
@@ -20,43 +31,89 @@ import { refreshCreditsIfNeeded, deductCredit, refundCredit } from "./billing";
 import type { db } from "@/server/db";
 
 /**
+ * Get the platform API key for a provider
+ */
+function getPlatformApiKey(provider: ImageProvider): string | undefined {
+  switch (provider) {
+    case "fal":
+      return process.env.FAL_API_KEY;
+    case "replicate":
+      return process.env.REPLICATE_API_TOKEN;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Get an API key for polling a specific provider
+ * Uses platform key if available, falls back to user's key for Replicate
+ */
+function getApiKeyForPolling(
+  provider: ImageProvider,
+  userReplicateKey: string | null,
+): string {
+  // Try platform key first
+  const platformKey = getPlatformApiKey(provider);
+  if (platformKey) {
+    return platformKey;
+  }
+
+  // Fall back to user's Replicate key if polling Replicate
+  if (provider === "replicate" && userReplicateKey) {
+    return userReplicateKey;
+  }
+
+  throw new TRPCError({
+    code: "PRECONDITION_FAILED",
+    message: "API_KEY_REQUIRED",
+  });
+}
+
+/**
  * Helper to check if user can generate (has credits OR own API key)
- * Returns the API key to use and whether credits should be deducted
+ * Returns the API key to use, provider, and whether credits should be deducted
  */
 async function checkGenerationAccess(
   database: typeof db,
   user: { id: string; replicateApiKey: string | null; plan: string },
-): Promise<{ apiKey: string; useCredits: boolean }> {
+): Promise<{ apiKey: string; provider: ImageProvider; useCredits: boolean }> {
+  const provider = getDefaultProvider();
+
   // Check if user has credits (works for both FREE and SUBSCRIBED users)
   const result = await refreshCreditsIfNeeded(database, user.id);
   if (result.hasCredits) {
     // Use platform API key for users with credits
-    const platformKey = process.env.REPLICATE_API_TOKEN;
+    const platformKey = getPlatformApiKey(provider);
     if (platformKey) {
-      return { apiKey: platformKey, useCredits: true };
+      return { apiKey: platformKey, provider, useCredits: true };
     }
   }
 
-  // Fall back to user's own API key
+  // Fall back to user's own API key (currently only supports Replicate keys)
+  // TODO: Add support for user-provided fal.ai keys
   if (user.replicateApiKey) {
-    return { apiKey: user.replicateApiKey, useCredits: false };
+    return { apiKey: user.replicateApiKey, provider: "replicate", useCredits: false };
   }
 
   // No credits and no API key
   throw new TRPCError({
     code: "PRECONDITION_FAILED",
-    message: "REPLICATE_KEY_REQUIRED",
+    message: "API_KEY_REQUIRED",
   });
 }
 
 /**
- * Check if an error is a Replicate 402 Insufficient Credit error
+ * Check if an error is an insufficient credit/balance error from the provider
  */
 function isInsufficientCreditError(error: unknown): boolean {
   if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    // Replicate: 402 Insufficient credit
+    // fal.ai: 402 or "insufficient balance"
     return (
-      error.message.includes("402") &&
-      error.message.includes("Insufficient credit")
+      (message.includes("402") && message.includes("insufficient")) ||
+      message.includes("insufficient balance") ||
+      message.includes("insufficient credit")
     );
   }
   return false;
@@ -116,7 +173,7 @@ export const generationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check generation access (subscription credits or own API key)
-      const { apiKey, useCredits } = await checkGenerationAccess(
+      const { apiKey, provider, useCredits } = await checkGenerationAccess(
         ctx.db,
         ctx.user,
       );
@@ -167,6 +224,7 @@ export const generationRouter = createTRPCRouter({
             height: dimensions.height,
           },
           apiKey,
+          provider,
         );
 
         // Deduct credit if using subscription
@@ -174,11 +232,11 @@ export const generationRouter = createTRPCRouter({
           await deductCredit(ctx.db, ctx.user.id);
         }
 
-        // Update with replicate ID and track credit usage
+        // Update with provider prediction ID and track credit usage
         await ctx.db.generation.update({
           where: { id: generation.id },
           data: {
-            replicateId: prediction.id,
+            replicateId: prediction.id, // Stores provider's prediction ID (works for both fal and replicate)
             status: "PROCESSING",
             usedCredits: useCredits,
           },
@@ -201,7 +259,7 @@ export const generationRouter = createTRPCRouter({
         if (isInsufficientCreditError(error)) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "REPLICATE_INSUFFICIENT_CREDIT",
+            message: "PROVIDER_INSUFFICIENT_CREDIT",
           });
         }
 
@@ -225,7 +283,7 @@ export const generationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check generation access (subscription credits or own API key)
-      const { apiKey, useCredits } = await checkGenerationAccess(
+      const { apiKey, provider, useCredits } = await checkGenerationAccess(
         ctx.db,
         ctx.user,
       );
@@ -276,6 +334,7 @@ export const generationRouter = createTRPCRouter({
             height: dimensions.height,
           },
           apiKey,
+          provider,
         );
 
         // Deduct credit if using subscription
@@ -283,11 +342,11 @@ export const generationRouter = createTRPCRouter({
           await deductCredit(ctx.db, ctx.user.id);
         }
 
-        // Update with replicate ID and track credit usage
+        // Update with provider prediction ID and track credit usage
         await ctx.db.generation.update({
           where: { id: generation.id },
           data: {
-            replicateId: prediction.id,
+            replicateId: prediction.id, // Stores provider's prediction ID (works for both fal and replicate)
             status: "PROCESSING",
             usedCredits: useCredits,
           },
@@ -312,7 +371,7 @@ export const generationRouter = createTRPCRouter({
         if (isInsufficientCreditError(error)) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "REPLICATE_INSUFFICIENT_CREDIT",
+            message: "PROVIDER_INSUFFICIENT_CREDIT",
           });
         }
 
@@ -329,9 +388,6 @@ export const generationRouter = createTRPCRouter({
   getStatus: protectedProcedure
     .input(z.object({ generationId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get API key for polling (subscription or user's own)
-      const { apiKey } = await checkGenerationAccess(ctx.db, ctx.user);
-
       const generation = await ctx.db.generation.findUnique({
         where: { id: input.generationId },
         include: {
@@ -360,10 +416,16 @@ export const generationRouter = createTRPCRouter({
         return generation;
       }
 
-      // Poll Replicate if we have an ID
+      // Poll provider if we have an ID
       if (generation.replicateId) {
+        // Detect which provider was used from the prediction ID format
+        const provider = detectProviderFromPredictionId(generation.replicateId);
+        
+        // Get API key for the detected provider
+        const apiKey = getApiKeyForPolling(provider, ctx.user.replicateApiKey);
+
         try {
-          const prediction = await getPrediction(generation.replicateId, apiKey);
+          const prediction = await getPrediction(generation.replicateId, apiKey, provider);
 
           const output = isArray(prediction.output)
             ? prediction.output[0]
@@ -410,8 +472,8 @@ export const generationRouter = createTRPCRouter({
               prediction.error ??
               `Generation ${prediction.status === "canceled" ? "was canceled" : "failed"}`;
             console.error(
-              `[Generation ${generation.id}] Replicate prediction ${prediction.status}`,
-              { replicateId: generation.replicateId, error: prediction.error },
+              `[Generation ${generation.id}] Provider prediction ${prediction.status}`,
+              { predictionId: generation.replicateId, provider, error: prediction.error },
             );
             // Refund credit if this generation used credits
             if (generation.usedCredits) {
@@ -433,8 +495,8 @@ export const generationRouter = createTRPCRouter({
               ? pollError.message
               : "Unknown error while polling generation status";
           console.error(
-            `[Generation ${generation.id}] Error polling Replicate`,
-            { replicateId: generation.replicateId, error: pollError },
+            `[Generation ${generation.id}] Error polling provider`,
+            { predictionId: generation.replicateId, provider, error: pollError },
           );
           // Refund credit if this generation used credits
           if (generation.usedCredits) {

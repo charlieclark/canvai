@@ -14,55 +14,64 @@ export const STYLE_PRESETS: StylePreset[] = [
     id: "auto",
     label: "Auto",
     description: "Automatically match the style from the reference",
-    promptModifier: "match and enhance the visual style present in the reference, maintaining consistency with its aesthetic",
+    promptModifier:
+      "match and enhance the visual style present in the reference, maintaining consistency with its aesthetic",
   },
   {
     id: "cinematic",
     label: "Cinematic",
     description: "Movie-like dramatic lighting and atmosphere",
-    promptModifier: "cinematic lighting, dramatic atmosphere, movie scene aesthetic, professional photography",
+    promptModifier:
+      "cinematic lighting, dramatic atmosphere, movie scene aesthetic, professional photography",
   },
   {
     id: "anime",
     label: "Anime",
     description: "Japanese animation style with cel shading",
-    promptModifier: "anime style, Japanese animation aesthetic, cel shading, vibrant colors",
+    promptModifier:
+      "anime style, Japanese animation aesthetic, cel shading, vibrant colors",
   },
   {
     id: "oil-painting",
     label: "Oil Painting",
     description: "Classical painting with textured brushstrokes",
-    promptModifier: "oil painting style, textured brushstrokes, classical art technique, rich colors",
+    promptModifier:
+      "oil painting style, textured brushstrokes, classical art technique, rich colors",
   },
   {
     id: "pixel-art",
     label: "Pixel Art",
     description: "Retro 8-bit game graphics aesthetic",
-    promptModifier: "pixel art style, 8-bit aesthetic, retro game graphics, limited color palette",
+    promptModifier:
+      "pixel art style, 8-bit aesthetic, retro game graphics, limited color palette",
   },
   {
     id: "watercolor",
     label: "Watercolor",
     description: "Soft washes and transparent layers",
-    promptModifier: "watercolor painting, soft washes, transparent layers, artistic flow",
+    promptModifier:
+      "watercolor painting, soft washes, transparent layers, artistic flow",
   },
   {
     id: "3d-render",
     label: "3D Render",
     description: "Photorealistic CGI with volumetric lighting",
-    promptModifier: "3D rendered, octane render, volumetric lighting, photorealistic CGI",
+    promptModifier:
+      "3D rendered, octane render, volumetric lighting, photorealistic CGI",
   },
   {
     id: "sketch",
     label: "Sketch",
     description: "Hand-drawn pencil illustration style",
-    promptModifier: "pencil sketch style, hand-drawn illustration, line art, graphite texture",
+    promptModifier:
+      "pencil sketch style, hand-drawn illustration, line art, graphite texture",
   },
   {
     id: "neon",
     label: "Neon",
     description: "Cyberpunk aesthetic with glowing colors",
-    promptModifier: "neon lights, cyberpunk aesthetic, glowing colors, dark background with bright accents",
+    promptModifier:
+      "neon lights, cyberpunk aesthetic, glowing colors, dark background with bright accents",
   },
 ];
 
@@ -85,14 +94,16 @@ export const ACTION_PRESETS: ActionPreset[] = [
     id: "transform-frame",
     label: "Auto",
     description: "Convert frame contents into a polished, cohesive image",
-    promptPrefix: "Transform the elements in this frame into a polished, cohesive image with unified lighting, style, and composition.",
+    promptPrefix:
+      "Transform the elements in this frame into a polished, cohesive image with unified lighting, style, and composition. Remove any shapes, lines or text that are annotations.",
     isDefault: true,
   },
   {
     id: "convert-sketch",
     label: "Convert Sketch",
     description: "Turn a rough sketch into a finished image",
-    promptPrefix: "Convert this sketch into a fully rendered image.",
+    promptPrefix:
+      "Convert this sketch into a fully rendered image. Remove any shapes, lines or text that are annotations.",
   },
   {
     id: "extend",
@@ -148,7 +159,8 @@ export const ENHANCEMENT_FILTERS: EnhancementFilter[] = [
     id: "soft-lighting",
     label: "Soft Lighting",
     description: "Gentle shadows and even illumination",
-    promptModifier: "soft diffused lighting, gentle shadows, even illumination.",
+    promptModifier:
+      "soft diffused lighting, gentle shadows, even illumination.",
   },
   {
     id: "vibrant-colors",
@@ -222,4 +234,3 @@ export function buildEnhancedPrompt({
 
   return parts.join(" ");
 }
-

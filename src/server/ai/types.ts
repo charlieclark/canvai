@@ -1,4 +1,9 @@
 /**
+ * Supported image generation providers
+ */
+export type ImageProvider = "fal" | "replicate";
+
+/**
  * Base interface for model inputs
  * All image models should extend this
  */
@@ -19,7 +24,7 @@ export interface ImageGenerationInput extends ModelInput {
 }
 
 /**
- * Prediction status and result from Replicate
+ * Prediction status and result (provider-agnostic)
  */
 export interface Prediction {
   id: string;
@@ -29,20 +34,24 @@ export interface Prediction {
 }
 
 /**
- * Configuration for an image generation model on Replicate
- * Each model defines its own input type and how to map it to Replicate's format
+ * Provider-specific model IDs
+ */
+export interface ProviderModelIds {
+  fal?: string;
+  replicate?: string;
+}
+
+/**
+ * Configuration for an image generation model
+ * Each model defines its own input type and how to map it to the provider's format
  */
 export interface ImageModelConfig<TInput extends ModelInput = ModelInput> {
   /** Display name for the model */
   name: string;
-  /** Replicate model identifier (e.g., "black-forest-labs/flux-schnell") */
-  modelId: string;
+  /** Provider-specific model identifiers */
+  modelIds: ProviderModelIds;
   /** Brief description of the model's characteristics */
   description: string;
-  /** Map our standardized input to the model's specific input format */
-  mapInput: (input: TInput) => Record<string, unknown>;
+  /** Map our standardized input to the model's specific input format for each provider */
+  mapInput: (input: TInput, provider: ImageProvider) => Record<string, unknown>;
 }
-
-
-
-
