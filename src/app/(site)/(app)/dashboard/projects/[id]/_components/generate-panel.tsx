@@ -12,6 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Sparkles, Frame, Plus, ImageIcon, Coins } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
@@ -28,6 +34,14 @@ import {
 import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 import { AssetGenerationModal } from "./asset-generation-modal";
 import { ConfirmGenerationModal } from "./confirm-generation-modal";
+import {
+  STYLE_PRESETS,
+  ACTION_PRESETS,
+  ENHANCEMENT_FILTERS,
+  DEFAULT_ACTION_ID,
+  buildEnhancedPrompt,
+} from "@/config/generation-presets";
+import { cn } from "@/lib/utils";
 
 const FRAME_DISPLAY_SCALE = 1;
 
@@ -47,6 +61,13 @@ export function GeneratePanel({
     useState<AspectRatio>("1:1");
   const [resolution, setResolution] = useState<Resolution>(DEFAULT_RESOLUTION);
 
+  // Generation preset states
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(["auto"]);
+  const [selectedAction, setSelectedAction] = useState<string | null>(
+    DEFAULT_ACTION_ID,
+  );
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
   // Modal states
   const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
     useState(false);
@@ -60,10 +81,27 @@ export function GeneratePanel({
 
   // Get credits status (includes subscription info and API key status)
   const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
-  
+
   // User can generate if they have credits OR their own API key
-  const canGenerate =
-    creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
+  const canGenerate = creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
+
+  // Toggle style selection
+  const toggleStyle = (styleId: string) => {
+    setSelectedStyles((prev) =>
+      prev.includes(styleId)
+        ? prev.filter((id) => id !== styleId)
+        : [...prev, styleId],
+    );
+  };
+
+  // Toggle filter selection
+  const toggleFilter = (filterId: string) => {
+    setSelectedFilters((prev) =>
+      prev.includes(filterId)
+        ? prev.filter((id) => id !== filterId)
+        : [...prev, filterId],
+    );
+  };
 
   // Create a new frame on the canvas
   const handleCreateFrame = () => {
@@ -158,16 +196,30 @@ export function GeneratePanel({
       });
 
       const url = URL.createObjectURL(blob);
-      return { previewUrl: url, aspectRatio: detectedAspectRatio, resolution: detectedRes };
+      return {
+        previewUrl: url,
+        aspectRatio: detectedAspectRatio,
+        resolution: detectedRes,
+      };
     } catch (error) {
       console.error("Failed to export frame:", error);
       return null;
     }
   }, [editor, selectedFrameId]);
 
+  // Build enhanced prompt with all selected options
+  const getEnhancedPrompt = () => {
+    return buildEnhancedPrompt({
+      userPrompt: prompt,
+      selectedAction,
+      selectedStyles,
+      selectedFilters,
+    });
+  };
+
   // Handle generate button click
   const handleGenerateClick = async () => {
-    if (!prompt.trim() || !editor || !selectedFrameId) return;
+    if (!editor || !selectedFrameId) return;
 
     if (!canGenerate) {
       setGenerationOptionsModalOpen(true);
@@ -193,6 +245,9 @@ export function GeneratePanel({
   // Handle generation success
   const handleGenerationSuccess = () => {
     setPrompt("");
+    setSelectedStyles([]);
+    setSelectedAction(DEFAULT_ACTION_ID);
+    setSelectedFilters([]);
     if (confirmModalData?.previewUrl) {
       URL.revokeObjectURL(confirmModalData.previewUrl);
     }
@@ -215,8 +270,14 @@ export function GeneratePanel({
     if (shape?.type !== "frame") return null;
     const bounds = editor.getShapeGeometry(shape).bounds;
     const detectedRatio = detectAspectRatio(bounds.width, bounds.height);
-    const detectedRes = detectResolution(bounds.width, bounds.height, detectedRatio);
-    const aspectRatioInfo = ASPECT_RATIOS.find((r) => r.value === detectedRatio);
+    const detectedRes = detectResolution(
+      bounds.width,
+      bounds.height,
+      detectedRatio,
+    );
+    const aspectRatioInfo = ASPECT_RATIOS.find(
+      (r) => r.value === detectedRatio,
+    );
     if (!aspectRatioInfo) return null;
     return {
       ...aspectRatioInfo,
@@ -229,13 +290,129 @@ export function GeneratePanel({
   // Credits display component
   const CreditsDisplay = () => {
     if (creditsStatus?.plan !== "SUBSCRIBED") return null;
-    
+
     return (
       <div className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950">
         <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400" />
         <span className="font-medium text-amber-900 dark:text-amber-100">
           {creditsStatus.credits} credits
         </span>
+      </div>
+    );
+  };
+
+  // Style selector component
+  const StyleSelector = () => {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2">
+          <Label className="text-xs font-medium">Style</Label>
+          <span className="text-muted-foreground text-[10px]">Optional</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <TooltipProvider delayDuration={300}>
+            {STYLE_PRESETS.map((style) => {
+              const isSelected = selectedStyles.includes(style.id);
+              return (
+                <Tooltip key={style.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => toggleStyle(style.id)}
+                      className={cn(
+                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted hover:bg-muted/80 text-foreground",
+                      )}
+                    >
+                      {style.label}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{style.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
+        </div>
+      </div>
+    );
+  };
+
+  // Action selector component
+  const ActionSelector = () => {
+    return (
+      <div className="space-y-2">
+        <Label className="text-xs font-medium">Action</Label>
+        <div className="flex flex-wrap gap-1.5">
+          <TooltipProvider delayDuration={300}>
+            {ACTION_PRESETS.map((action) => {
+              const isSelected = selectedAction === action.id;
+              return (
+                <Tooltip key={action.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() =>
+                        setSelectedAction(isSelected ? null : action.id)
+                      }
+                      className={cn(
+                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted hover:bg-muted/80 text-foreground",
+                      )}
+                    >
+                      {action.label}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{action.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
+        </div>
+      </div>
+    );
+  };
+
+  // Enhancement filters component
+  const EnhancementFilters = () => {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2">
+          <Label className="text-xs font-medium">Enhancements</Label>
+          <span className="text-muted-foreground text-[10px]">Optional</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <TooltipProvider delayDuration={300}>
+            {ENHANCEMENT_FILTERS.map((filter) => {
+              const isSelected = selectedFilters.includes(filter.id);
+              return (
+                <Tooltip key={filter.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => toggleFilter(filter.id)}
+                      className={cn(
+                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted hover:bg-muted/80 text-foreground",
+                      )}
+                    >
+                      {filter.label}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{filter.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
+        </div>
       </div>
     );
   };
@@ -357,7 +534,8 @@ export function GeneratePanel({
             <h2 className="font-semibold">Generate</h2>
             {frameInfo && (
               <p className="text-muted-foreground text-xs">
-                {frameInfo.label} • {frameInfo.resolution === 2 ? "2K" : "1K"} ({frameInfo.outputWidth}×{frameInfo.outputHeight})
+                {frameInfo.label} • {frameInfo.resolution === 2 ? "2K" : "1K"} (
+                {frameInfo.outputWidth}×{frameInfo.outputHeight})
               </p>
             )}
           </div>
@@ -365,41 +543,54 @@ export function GeneratePanel({
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="space-y-6 p-4">
+          <div className="space-y-5 p-4">
+            {/* Prompt input */}
             <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt</Label>
+              <div className="flex items-baseline gap-2">
+                <Label htmlFor="prompt">Prompt</Label>
+                <span className="text-muted-foreground text-xs">Optional</span>
+              </div>
               <Textarea
                 id="prompt"
-                placeholder="Describe what you want to generate..."
+                placeholder="Add extra details or leave empty for automatic transformation..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                rows={4}
+                rows={3}
                 className="resize-none"
               />
-              <p className="text-muted-foreground text-xs">
-                The frame contents will be used as a reference for the
-                generation.
-              </p>
             </div>
 
-            <Button
-              onClick={handleGenerateClick}
-              disabled={!prompt.trim()}
-              className="w-full"
-              size="lg"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate
-            </Button>
+            {/* Action presets */}
+            <ActionSelector />
+
+            {/* Style presets */}
+            <StyleSelector />
+
+            {/* Enhancement filters */}
+            <EnhancementFilters />
           </div>
         </ScrollArea>
+
+        {/* Sticky generate button */}
+        <div className="border-t p-4">
+          <Button onClick={handleGenerateClick} className="w-full" size="lg">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate
+          </Button>
+        </div>
       </div>
 
       <ConfirmGenerationModal
         projectId={projectId}
         open={confirmModalOpen}
         onOpenChange={handleConfirmModalClose}
-        prompt={prompt}
+        prompt={getEnhancedPrompt()}
+        selections={{
+          userPrompt: prompt,
+          selectedAction,
+          selectedStyles,
+          selectedFilters,
+        }}
         previewUrl={confirmModalData?.previewUrl ?? null}
         aspectRatio={confirmModalData?.aspectRatio ?? null}
         resolution={confirmModalData?.resolution ?? DEFAULT_RESOLUTION}

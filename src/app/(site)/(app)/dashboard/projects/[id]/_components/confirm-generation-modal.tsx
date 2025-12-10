@@ -17,12 +17,25 @@ import { uploadImage } from "@/lib/utils/upload";
 import type { AspectRatio, Resolution } from "@/lib/utils/image";
 import { getGenerationDimensions } from "@/lib/utils/image";
 import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
+import {
+  ACTION_PRESETS,
+  STYLE_PRESETS,
+  ENHANCEMENT_FILTERS,
+} from "@/config/generation-presets";
+
+interface GenerationSelections {
+  userPrompt: string;
+  selectedAction: string | null;
+  selectedStyles: string[];
+  selectedFilters: string[];
+}
 
 interface ConfirmGenerationModalProps {
   projectId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  prompt: string;
+  prompt: string; // The built prompt for API
+  selections: GenerationSelections; // User selections for display
   previewUrl: string | null;
   aspectRatio: AspectRatio | null;
   resolution: Resolution;
@@ -34,6 +47,7 @@ export function ConfirmGenerationModal({
   open,
   onOpenChange,
   prompt,
+  selections,
   previewUrl,
   aspectRatio,
   resolution,
@@ -102,6 +116,19 @@ export function ConfirmGenerationModal({
     onOpenChange(newOpen);
   };
 
+  // Get display labels for selections
+  const actionLabel = selections.selectedAction
+    ? ACTION_PRESETS.find((a) => a.id === selections.selectedAction)?.label
+    : null;
+
+  const styleLabels = selections.selectedStyles
+    .map((id) => STYLE_PRESETS.find((s) => s.id === id)?.label)
+    .filter(Boolean);
+
+  const filterLabels = selections.selectedFilters
+    .map((id) => ENHANCEMENT_FILTERS.find((f) => f.id === id)?.label)
+    .filter(Boolean);
+
   return (
     <>
       <InsufficientCreditModal
@@ -113,8 +140,7 @@ export function ConfirmGenerationModal({
           <DialogHeader>
             <DialogTitle>Confirm Generation</DialogTitle>
             <DialogDescription>
-              Review the frame that will be used as a reference for your
-              generation.
+              Review your generation settings before proceeding.
             </DialogDescription>
           </DialogHeader>
 
@@ -130,29 +156,64 @@ export function ConfirmGenerationModal({
             </div>
           )}
 
-          {/* Prompt Preview */}
-          <div className="space-y-1">
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              Prompt
-            </p>
-            <p className="text-sm">{prompt}</p>
-          </div>
-
-          {/* Output Dimensions */}
-          {aspectRatio && (
-            <div className="space-y-1">
-              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                Output Resolution
-              </p>
-              <p className="text-sm">
-                {getGenerationDimensions(aspectRatio, resolution).width} ×{" "}
-                {getGenerationDimensions(aspectRatio, resolution).height}px
-                <span className="text-muted-foreground ml-2">
-                  ({resolution === 2 ? "2K" : "1K"})
+          {/* Generation Settings Summary */}
+          <div className="space-y-3">
+            {/* Action */}
+            {actionLabel && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Action
                 </span>
-              </p>
-            </div>
-          )}
+                <span className="text-sm">{actionLabel}</span>
+              </div>
+            )}
+
+            {/* Custom Prompt */}
+            {selections.userPrompt.trim() && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Prompt
+                </span>
+                <span className="text-sm">{selections.userPrompt.trim()}</span>
+              </div>
+            )}
+
+            {/* Styles */}
+            {styleLabels.length > 0 && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Style
+                </span>
+                <span className="text-sm">{styleLabels.join(", ")}</span>
+              </div>
+            )}
+
+            {/* Enhancements */}
+            {filterLabels.length > 0 && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Enhance
+                </span>
+                <span className="text-sm">{filterLabels.join(", ")}</span>
+              </div>
+            )}
+
+            {/* Output Dimensions */}
+            {aspectRatio && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Output
+                </span>
+                <span className="text-sm">
+                  {getGenerationDimensions(aspectRatio, resolution).width} ×{" "}
+                  {getGenerationDimensions(aspectRatio, resolution).height}px
+                  <span className="text-muted-foreground ml-1">
+                    ({resolution === 2 ? "2K" : "1K"})
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
