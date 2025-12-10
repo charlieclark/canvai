@@ -2,14 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import {
-  Banana,
-  Frame,
-  KeyRound,
-  LayoutGrid,
-  Sparkles,
-  Upload,
-} from "lucide-react";
+import { Banana, Frame, LayoutGrid, Sparkles, Upload } from "lucide-react";
 import { WaveTransition, darkToCreamWave } from "./wave-transition";
 
 const features = [
@@ -46,20 +39,12 @@ const features = [
     delay: 0.3,
   },
   {
-    title: "Bring Your Own Key",
-    description:
-      "Use your own Replicate API key for unlimited generations. Full control over your AI usage and costs.",
-    icon: KeyRound,
-    gradient: "from-emerald-400 to-teal-500",
-    delay: 0.4,
-  },
-  {
     title: "Export Anywhere",
     description:
       "Download your creations as high-resolution images. Ready for social media, print, or your next project.",
     icon: Upload,
     gradient: "from-amber-400 to-yellow-500",
-    delay: 0.5,
+    delay: 0.4,
   },
 ];
 

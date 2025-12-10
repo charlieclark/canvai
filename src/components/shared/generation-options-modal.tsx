@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Key, Sparkles, ArrowRight } from "lucide-react";
-import { ApiKeyModal } from "./api-key-modal";
+import { Sparkles } from "lucide-react";
 import { StripeCheckout } from "./stripe-checkout";
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface GenerationOptionsModalProps {
   open: boolean;
@@ -23,21 +23,11 @@ export function GenerationOptionsModal({
   onOpenChange,
   onSuccess,
 }: GenerationOptionsModalProps) {
-  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
   const [stripeCheckoutOpen, setStripeCheckoutOpen] = useState(false);
 
   const handleSubscribeClick = () => {
     onOpenChange(false);
     setStripeCheckoutOpen(true);
-  };
-
-  const handleUseOwnKey = () => {
-    onOpenChange(false);
-    setApiKeyModalOpen(true);
-  };
-
-  const handleApiKeySuccess = () => {
-    onSuccess?.();
   };
 
   const handleStripeSuccess = () => {
@@ -47,65 +37,50 @@ export function GenerationOptionsModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
-              Start Generating
+              Upgrade to CanvAi Pro
             </DialogTitle>
             <DialogDescription>
-              Choose how you&apos;d like to power your image generations.
+              Subscribe to start generating AI images with CanvAi.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            {/* Subscribe Option */}
-            <button
-              onClick={handleSubscribeClick}
-              className="group relative rounded-xl border-2 border-gray-200 bg-white p-5 text-left transition-all hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
-            >
-              <div className="mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                  <Sparkles className="h-5 w-5" />
-                </div>
+          <div className="py-4">
+            <div className="rounded-lg border bg-gradient-to-br from-violet-50 to-fuchsia-50 p-6 dark:from-violet-950/50 dark:to-fuchsia-950/50">
+              <div className="mb-4">
+                <span className="text-3xl font-bold">$20</span>
+                <span className="text-muted-foreground">/month</span>
               </div>
-              <h3 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
-                Subscribe to CanvAi
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                $20/month for 200 credits. No setup required, just start
-                generating.
-              </p>
-              <ArrowRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-            </button>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span>200 image generation credits per month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span>Access to all AI models</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span>Cancel anytime</span>
+                </li>
+              </ul>
+            </div>
 
-            {/* BYOK Option */}
-            <button
-              onClick={handleUseOwnKey}
-              className="group relative rounded-xl border-2 border-gray-200 bg-white p-5 text-left transition-all hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+            <Button
+              size="lg"
+              className="mt-4 w-full"
+              onClick={handleSubscribeClick}
             >
-              <div className="mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                  <Key className="h-5 w-5" />
-                </div>
-              </div>
-              <h3 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
-                Use Your Own API Key
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Connect your Replicate account and pay only for what you use.
-              </p>
-              <ArrowRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-            </button>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Subscribe Now
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-      <ApiKeyModal
-        open={apiKeyModalOpen}
-        onOpenChange={setApiKeyModalOpen}
-        onSuccess={handleApiKeySuccess}
-      />
 
       <StripeCheckout
         open={stripeCheckoutOpen}

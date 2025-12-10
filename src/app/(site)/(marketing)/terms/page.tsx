@@ -25,9 +25,9 @@ export default function TermsPage() {
       <h2>2. Description of Service</h2>
       <p>
         CanvAi provides an infinite canvas workspace for creating AI-generated
-        artwork. Users can sketch, compose frames, and generate images using
-        AI models powered by Replicate. The Service requires users to provide
-        their own Replicate API key for image generation.
+        artwork. Users can sketch, compose frames, and generate images using AI
+        models. The Service offers a subscription plan (CanvAi Pro) that
+        includes monthly credits for image generation.
       </p>
 
       <h2>3. User Accounts</h2>
@@ -36,32 +36,25 @@ export default function TermsPage() {
         <li>Create an account with accurate and complete information</li>
         <li>Be at least 13 years of age</li>
         <li>Maintain the security of your account credentials</li>
-        <li>Provide your own valid Replicate API key for AI generations</li>
         <li>
           Accept responsibility for all activities under your account
         </li>
       </ul>
 
-      <h2>4. API Keys and Third-Party Services</h2>
-      <p>
-        CanvAi integrates with Replicate for AI image generation. By using the
-        Service:
-      </p>
+      <h2>4. Subscription and Billing</h2>
+      <p>CanvAi Pro subscription terms:</p>
       <ul>
         <li>
-          You are responsible for obtaining and managing your own Replicate API
-          key
+          CanvAi Pro costs $20/month and includes 200 image generation credits
+        </li>
+        <li>Credits reset at the beginning of each billing cycle</li>
+        <li>
+          You may cancel your subscription at any time; access continues until
+          the end of your billing period
         </li>
         <li>
-          Usage costs from Replicate are billed directly to you by Replicate
-        </li>
-        <li>
-          You agree to comply with Replicate&apos;s terms of service and
-          acceptable use policies
-        </li>
-        <li>
-          CanvAi is not responsible for any charges incurred through your
-          Replicate usage
+          We use Stripe for payment processing; your payment information is
+          handled securely
         </li>
       </ul>
 

@@ -45,12 +45,11 @@ export default function AboutPage() {
         </li>
       </ul>
 
-      <h2>Powered by Replicate</h2>
+      <h2>Powered by AI</h2>
       <p>
-        We use Replicate&apos;s infrastructure to run our AI models. You bring
-        your own Replicate API key, giving you full control over your usage and
-        costs. No subscriptions, no hidden fees—you only pay for what you
-        generate.
+        We use cutting-edge AI models to power image generation. With CanvAi
+        Pro, you get 200 credits per month to bring your creative visions to
+        life—no complex setup required.
       </p>
 
       <h2>Built for Creators</h2>

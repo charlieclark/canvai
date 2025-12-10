@@ -40,18 +40,18 @@ export default function PrivacyPage() {
         <li>Usage patterns and interactions with the Service</li>
       </ul>
 
-      <h3>API Keys</h3>
+      <h3>Payment Information</h3>
       <p>
-        Your Replicate API key is stored securely and encrypted. We use it
-        solely to make API calls on your behalf for image generation. We never
-        share your API key with third parties.
+        Payment processing is handled securely by Stripe. We do not store your
+        full credit card details on our servers. Stripe&apos;s privacy policy
+        governs the handling of your payment information.
       </p>
 
       <h2>How We Use Your Information</h2>
       <p>We use collected information to:</p>
       <ul>
         <li>Provide and maintain the CanvAi service</li>
-        <li>Process image generation requests through Replicate</li>
+        <li>Process image generation requests</li>
         <li>Store and sync your projects across devices</li>
         <li>Send important service updates and notifications</li>
         <li>Improve and optimize the Service</li>
@@ -63,8 +63,12 @@ export default function PrivacyPage() {
       <p>We do not sell your personal information. We may share data with:</p>
       <ul>
         <li>
-          <strong>Replicate:</strong> Your prompts and image data are sent to
-          Replicate for AI processing, subject to their privacy policy
+          <strong>AI Providers:</strong> Your prompts and image data are sent to
+          our AI providers for processing, subject to their privacy policies
+        </li>
+        <li>
+          <strong>Payment Processors:</strong> We use Stripe for secure payment
+          processing
         </li>
         <li>
           <strong>Authentication Providers:</strong> We use Clerk for secure

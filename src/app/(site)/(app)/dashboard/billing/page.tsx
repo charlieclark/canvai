@@ -239,8 +239,8 @@ export default function BillingPage() {
                         <AlertDialogDescription>
                           You&apos;ll retain access to your credits until the
                           end of your current billing period. After that,
-                          you&apos;ll need to use your own Replicate API key to
-                          generate images.
+                          you&apos;ll need to resubscribe to continue generating
+                          images.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -323,12 +323,6 @@ export default function BillingPage() {
               Subscribe Now
             </Button>
 
-            {creditsStatus?.hasOwnApiKey && (
-              <p className="text-muted-foreground text-center text-sm">
-                You currently have your own Replicate API key configured. You
-                can continue using it or upgrade for a simpler experience.
-              </p>
-            )}
           </CardContent>
         </Card>
       )}

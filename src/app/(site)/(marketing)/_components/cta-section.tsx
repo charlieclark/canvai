@@ -27,8 +27,8 @@ export function CTASection() {
             Ready to bring your ideas to life?
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-lg text-slate-600">
-            Bring your own Replicate API key and start creating. You only pay
-            for what you generate—no subscriptions, no hidden fees.
+            Start creating stunning AI art with CanvAi Pro. Transform your
+            sketches into polished artwork in seconds.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">

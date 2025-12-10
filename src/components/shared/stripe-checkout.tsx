@@ -56,8 +56,7 @@ export function StripeCheckout({
         <DialogHeader>
           <DialogTitle>Subscribe to CanvAi</DialogTitle>
           <DialogDescription>
-            Get 200 credits per month to generate images without managing your
-            own API keys.
+            Get 200 credits per month to generate stunning AI images.
           </DialogDescription>
         </DialogHeader>
         <div className="min-h-[600px] py-4">
