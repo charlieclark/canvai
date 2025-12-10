@@ -59,7 +59,11 @@ export function AssetGenerationModal({
     setIsGenerating(true);
     generateAssetMutation.mutate({
       projectId,
-      prompt: prompt.trim(),
+      prompt: [
+        "Make sure the entire object is in view",
+        "Generate the object on a white background",
+        prompt.trim(),
+      ].join("\n"),
     });
   };
 
@@ -86,52 +90,50 @@ export function AssetGenerationModal({
             </DialogDescription>
           </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="asset-prompt">Prompt</Label>
-            <Textarea
-              id="asset-prompt"
-              placeholder="Describe the asset you want to generate..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-muted-foreground text-xs">
-              Assets are generated as 1:1 square images.
-            </p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="asset-prompt">Prompt</Label>
+              <Textarea
+                id="asset-prompt"
+                placeholder="Describe the asset you want to generate..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-muted-foreground text-xs">
+                Assets are generated as 1:1 square images.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={() => handleClose(false)}
-            disabled={isGenerating}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleGenerate}
-            disabled={!prompt.trim() || isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Generate Asset
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => handleClose(false)}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerate}
+              disabled={!prompt.trim() || isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Asset
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-

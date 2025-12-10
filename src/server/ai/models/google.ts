@@ -45,7 +45,7 @@ export const nanoBananaPro: ImageModelConfig<ImageGenerationInput> = {
 export const imagenFast: ImageModelConfig<ImageGenerationInput> = {
   name: "Imagen 4 Fast",
   modelIds: {
-    fal: "fal-ai/imagen4/fast",
+    fal: "workflows/charlieclark/generate-remove-bg",
     replicate: "google/imagen-4-fast",
   },
   description: "Fast",
@@ -57,8 +57,6 @@ export const imagenFast: ImageModelConfig<ImageGenerationInput> = {
       return {
         prompt: input.prompt,
         aspect_ratio: aspectRatio,
-        output_format: input.outputFormat ?? "jpeg",
-        safety_tolerance: "5", // fal.ai uses string values
       };
     }
 

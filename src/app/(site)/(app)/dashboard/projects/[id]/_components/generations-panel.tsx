@@ -282,11 +282,11 @@ export function GenerationsPanel({
               </div>
 
               {/* Prompt preview */}
-              <div className="p-2">
+              {/* <div className="p-2">
                 <p className="text-muted-foreground line-clamp-2 text-xs">
                   {generation.prompt}
                 </p>
-              </div>
+              </div> */}
             </div>
           ))}
 
