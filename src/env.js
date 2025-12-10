@@ -17,8 +17,8 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string(),
     // Image generation provider configuration
     IMAGE_PROVIDER: z.enum(["fal", "replicate"]).default("fal"),
-    FAL_API_KEY: z.string().optional(), // Platform fal.ai key
-    REPLICATE_API_TOKEN: z.string().optional(), // Platform Replicate key (legacy)
+    FAL_API_KEY: z.string(), // Platform fal.ai key
+    REPLICATE_API_TOKEN: z.string(), // Platform Replicate key (legacy)
     STRIPE_PRIVATE_KEY: z.string(),
     STRIPE_PRICE: z.string(),
   },
