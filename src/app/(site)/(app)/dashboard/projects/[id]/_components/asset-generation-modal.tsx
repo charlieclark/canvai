@@ -12,7 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { api } from "@/trpc/react";
 import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
 
@@ -89,6 +90,15 @@ export function AssetGenerationModal({
               frames.
             </DialogDescription>
           </DialogHeader>
+
+          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              This is a text-to-image generator for creating standalone assets
+              (characters, objects, items) that you can then composite into your
+              frames.
+            </AlertDescription>
+          </Alert>
 
           <div className="space-y-4">
             <div className="space-y-2">
