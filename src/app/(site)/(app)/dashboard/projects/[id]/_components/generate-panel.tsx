@@ -21,6 +21,7 @@ import {
 import { Sparkles, Frame, Plus, ImageIcon, Coins } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
+import { useToast } from "@/hooks/use-toast";
 import {
   ASPECT_RATIOS,
   RESOLUTIONS,
@@ -56,6 +57,7 @@ export function GeneratePanel({
   editor,
   selectedFrameId,
 }: GeneratePanelProps) {
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
   const [newFrameAspectRatio, setNewFrameAspectRatio] =
     useState<AspectRatio>("1:1");
@@ -220,6 +222,18 @@ export function GeneratePanel({
   // Handle generate button click
   const handleGenerateClick = async () => {
     if (!editor || !selectedFrameId) return;
+
+    // Check if frame has any content
+    const childIds = editor.getSortedChildIdsForParent(selectedFrameId);
+    if (childIds.length === 0) {
+      toast({
+        title: "Empty frame",
+        description:
+          "Add some content to the frame before generating. Draw, add images, or paste elements into the frame.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!canGenerate) {
       setGenerationOptionsModalOpen(true);
@@ -432,6 +446,7 @@ export function GeneratePanel({
           </div>
 
           <div className="flex flex-1 flex-col p-6">
+            {/* Frame creation section */}
             <div className="mb-6 text-center">
               <div className="bg-muted mx-auto mb-4 w-fit rounded-full p-4">
                 <Frame className="text-muted-foreground h-8 w-8" />
@@ -496,7 +511,17 @@ export function GeneratePanel({
                 <Plus className="mr-2 h-4 w-4" />
                 Create Frame
               </Button>
+            </div>
 
+            {/* Divider */}
+            <div className="my-6 flex items-center gap-3">
+              <div className="bg-border h-px flex-1" />
+              <span className="text-muted-foreground text-xs">or</span>
+              <div className="bg-border h-px flex-1" />
+            </div>
+
+            {/* Generate Asset section */}
+            <div className="space-y-3">
               <Button
                 onClick={handleOpenAssetModal}
                 variant="outline"
@@ -505,6 +530,10 @@ export function GeneratePanel({
                 <ImageIcon className="mr-2 h-4 w-4" />
                 Generate Asset
               </Button>
+              <p className="text-muted-foreground text-center text-xs">
+                Create standalone images from a text prompt without using a
+                frame.
+              </p>
             </div>
           </div>
         </div>
