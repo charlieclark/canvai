@@ -404,7 +404,7 @@ export function GeneratePanelSelected({
             {/* Frame Preview */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Frame Preview</Label>
-              <div className="bg-muted border-primary/50 relative aspect-video overflow-hidden rounded-lg border-2">
+              <div className="bg-muted border-primary/50 relative aspect-2/1 overflow-hidden rounded-lg border-2">
                 {framePreviewUrl ? (
                   <Image
                     src={framePreviewUrl}
@@ -489,22 +489,6 @@ export function GeneratePanelSelected({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            </div>
-
-            {/* Prompt input */}
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-2">
-                <Label htmlFor="prompt">Prompt</Label>
-                <span className="text-muted-foreground text-xs">Optional</span>
-              </div>
-              <Textarea
-                id="prompt"
-                placeholder="Add extra details or leave empty for automatic transformation..."
-                value={prompt}
-                onChange={(e) => handlePromptChange(e.target.value)}
-                rows={3}
-                className="resize-none"
-              />
             </div>
 
             {/* Action presets */}
@@ -633,6 +617,22 @@ export function GeneratePanelSelected({
                   ))}
                 </TooltipProvider>
               </div>
+            </div>
+
+            {/* Prompt input */}
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <Label htmlFor="prompt">Prompt</Label>
+                <span className="text-muted-foreground text-xs">Optional</span>
+              </div>
+              <Textarea
+                id="prompt"
+                placeholder="Add extra details or leave empty for automatic transformation..."
+                value={prompt}
+                onChange={(e) => handlePromptChange(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
             </div>
           </div>
         </ScrollArea>

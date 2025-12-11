@@ -149,13 +149,6 @@ export const COMPOSITION_PRESETS: CompositionPreset[] = [
     isDefault: true,
   },
   {
-    id: "inspired",
-    label: "Inspired",
-    description: "Use input as reference, prioritize natural/realistic output",
-    promptModifier:
-      "Use the reference as inspiration for the concept and elements, but prioritize generating a natural, realistic, and visually cohesive result over matching the exact layout.",
-  },
-  {
     id: "reimagine",
     label: "Reimagine",
     description: "Loose interpretation, maximum creative freedom",
@@ -264,9 +257,7 @@ export function buildEnhancedPrompt({
     parts.push(composition.promptModifier);
   } else {
     // Fallback to Guided composition when none selected
-    const guidedComposition = COMPOSITION_PRESETS.find(
-      (c) => c.id === "guided",
-    );
+    const guidedComposition = COMPOSITION_PRESETS.find((c) => !!c.isDefault);
     if (guidedComposition) {
       parts.push(guidedComposition.promptModifier);
     }
