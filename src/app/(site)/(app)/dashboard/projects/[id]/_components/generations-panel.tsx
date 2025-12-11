@@ -57,11 +57,13 @@ function PendingGeneration({
 interface GenerationsPanelProps {
   projectId: string;
   onAddAssetToCanvas: (asset: AssetToAdd) => void;
+  onAddFrameWithGeneration: (generation: Generation) => void;
 }
 
 export function GenerationsPanel({
   projectId,
   onAddAssetToCanvas,
+  onAddFrameWithGeneration,
 }: GenerationsPanelProps) {
   const { toast } = useToast();
   const utils = api.useUtils();
@@ -107,14 +109,18 @@ export function GenerationsPanel({
   const handleAddToCanvas = (generation: Generation) => {
     if (!generation.imageUrl) return;
 
-    onAddAssetToCanvas({
-      id: generation.id,
-      name: `Generation ${generation.id}`,
-      src: generation.imageUrl,
-      width: generation.width,
-      height: generation.height,
-      mimeType: "image/jpg",
-    });
+    if (generation.type === "ASSET") {
+      onAddAssetToCanvas({
+        id: generation.id,
+        name: `Generation ${generation.id}`,
+        src: generation.imageUrl,
+        width: generation.width,
+        height: generation.height,
+        mimeType: "image/jpg",
+      });
+    } else if (generation.type === "FRAME") {
+      onAddFrameWithGeneration(generation);
+    }
   };
 
   const handleDownload = async (generation: Generation) => {
@@ -151,90 +157,90 @@ export function GenerationsPanel({
           </Button>
         </div>
 
-      <ScrollArea className="flex-1">
-        <div className="space-y-3 p-4">
-          {/* Pending generations - each polls its own status */}
-          {pendingGenerations.map((generation) => (
-            <PendingGeneration
-              key={generation.id}
-              generation={generation}
-              projectId={projectId}
-            />
-          ))}
+        <ScrollArea className="flex-1">
+          <div className="space-y-3 p-4">
+            {/* Pending generations - each polls its own status */}
+            {pendingGenerations.map((generation) => (
+              <PendingGeneration
+                key={generation.id}
+                generation={generation}
+                projectId={projectId}
+              />
+            ))}
 
-          {/* Completed generations */}
-          {completedGenerations.map((generation) => (
-            <div
-              key={generation.id}
-              className="bg-background group relative overflow-hidden rounded-lg border"
-            >
-              <div className="relative aspect-square">
-                {generation.imageUrl ? (
-                  <Image
-                    src={generation.imageUrl}
-                    alt={generation.prompt}
-                    fill
-                    className="object-cover"
-                    sizes="256px"
-                  />
-                ) : (
-                  <div className="bg-muted flex h-full items-center justify-center">
-                    <ImageIcon className="text-muted-foreground h-8 w-8" />
+            {/* Completed generations */}
+            {completedGenerations.map((generation) => (
+              <div
+                key={generation.id}
+                className="bg-background group relative overflow-hidden rounded-lg border"
+              >
+                <div className="relative aspect-square">
+                  {generation.imageUrl ? (
+                    <Image
+                      src={generation.imageUrl}
+                      alt={generation.prompt}
+                      fill
+                      className="object-cover"
+                      sizes="256px"
+                    />
+                  ) : (
+                    <div className="bg-muted flex h-full items-center justify-center">
+                      <ImageIcon className="text-muted-foreground h-8 w-8" />
+                    </div>
+                  )}
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => handleAddToCanvas(generation)}
+                      title="Add to canvas"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => handleDownload(generation)}
+                      title="Download"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => handleDelete(generation)}
+                      disabled={deleteGeneration.isPending}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
-
-                {/* Hover overlay */}
-                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    onClick={() => handleAddToCanvas(generation)}
-                    title="Add to canvas"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    onClick={() => handleDownload(generation)}
-                    title="Download"
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    onClick={() => handleDelete(generation)}
-                    disabled={deleteGeneration.isPending}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
-              </div>
 
-              {/* Prompt preview */}
-              {/* <div className="p-2">
+                {/* Prompt preview */}
+                {/* <div className="p-2">
                 <p className="text-muted-foreground line-clamp-2 text-xs">
                   {generation.prompt}
                 </p>
               </div> */}
-            </div>
-          ))}
+              </div>
+            ))}
 
-          {/* Empty state */}
-          {generations.length === 0 && (
-            <div className="text-muted-foreground py-8 text-center text-sm">
-              <ImageIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
-              <p>No generations yet</p>
-              <p className="mt-1 text-xs">
-                Select a frame and generate your first image
-              </p>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-    </div>
+            {/* Empty state */}
+            {generations.length === 0 && (
+              <div className="text-muted-foreground py-8 text-center text-sm">
+                <ImageIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                <p>No generations yet</p>
+                <p className="mt-1 text-xs">
+                  Select a frame and generate your first image
+                </p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
       <AddAssetModal
         projectId={projectId}

@@ -20,10 +20,12 @@ import { toast } from "sonner";
 import {
   ASPECT_RATIOS,
   DEFAULT_RESOLUTION,
+  detectAspectRatio,
   getGenerationDimensions,
   type AspectRatio,
   type Resolution,
 } from "@/lib/utils/image";
+import type { Generation } from "@prisma/client";
 
 export interface AssetToAdd {
   id: string;
@@ -250,7 +252,118 @@ export default function ProjectPage() {
         editor.zoomToSelection({ animation: { duration: 200 } });
       }
     },
-    [editor, lastSelectedFrameId],
+    [editor, lastSelectedFrameId, zoomToFrameBounds],
+  );
+
+  // Add a FRAME generation to canvas: creates a new frame with matching dimensions and adds the image
+  const handleAddFrameWithGeneration = useCallback(
+    (generation: Generation) => {
+      if (!editor || !generation.imageUrl) return;
+
+      const displayWidth = generation.width * FRAME_DISPLAY_SCALE;
+      const displayHeight = generation.height * FRAME_DISPLAY_SCALE;
+
+      // Detect aspect ratio for frame name
+      const detectedAspectRatio = detectAspectRatio(
+        generation.width,
+        generation.height,
+      );
+      const ratio = ASPECT_RATIOS.find((r) => r.value === detectedAspectRatio);
+      const ratioLabel = ratio?.label ?? detectedAspectRatio;
+
+      // Find a non-overlapping position for the new frame
+      const existingFrames = editor
+        .getCurrentPageShapes()
+        .filter((shape) => shape.type === "frame");
+
+      const overlapsExistingFrame = (x: number, y: number) => {
+        const padding = 40;
+        const newLeft = x;
+        const newRight = x + displayWidth;
+        const newTop = y;
+        const newBottom = y + displayHeight;
+
+        return existingFrames.some((frame) => {
+          const bounds = editor.getShapeGeometry(frame).bounds;
+          const frameLeft = frame.x - padding;
+          const frameRight = frame.x + bounds.width + padding;
+          const frameTop = frame.y - padding;
+          const frameBottom = frame.y + bounds.height + padding;
+
+          return (
+            newLeft < frameRight &&
+            newRight > frameLeft &&
+            newTop < frameBottom &&
+            newBottom > frameTop
+          );
+        });
+      };
+
+      let x = -displayWidth / 2;
+      const y = -displayHeight / 2;
+      const stepSize = displayWidth + 60;
+
+      for (let i = 0; i < 50; i++) {
+        if (!overlapsExistingFrame(x, y)) break;
+        x += stepSize;
+      }
+
+      // Create the frame
+      const frameId = createShapeId();
+      editor.createShape({
+        id: frameId,
+        type: "frame",
+        x,
+        y,
+        props: {
+          w: displayWidth,
+          h: displayHeight,
+          name: ratioLabel,
+        },
+      });
+
+      // Create the asset for the generation image
+      const assetId = `asset:${generation.id}` as TLAssetId;
+      const existingAsset = editor.getAsset(assetId);
+      if (!existingAsset) {
+        editor.createAssets([
+          {
+            id: assetId,
+            type: "image",
+            typeName: "asset",
+            props: {
+              name: `Generation ${generation.id}`,
+              src: generation.imageUrl,
+              w: generation.width,
+              h: generation.height,
+              mimeType: "image/jpg",
+              isAnimated: false,
+            },
+            meta: {},
+          },
+        ]);
+      }
+
+      // Add the image to the frame, sized to fill exactly
+      const imageShapeId = createShapeId();
+      editor.createShape({
+        id: imageShapeId,
+        type: "image",
+        x: 0,
+        y: 0,
+        parentId: frameId,
+        props: {
+          assetId: assetId,
+          w: displayWidth,
+          h: displayHeight,
+        },
+      });
+
+      // Select the frame and zoom to it
+      editor.select(frameId);
+      editor.zoomToSelection({ animation: { duration: 200 } });
+    },
+    [editor],
   );
 
   const handleSaveStatusChange = useCallback((status: SaveStatus) => {
@@ -465,6 +578,7 @@ export default function ProjectPage() {
         <GenerationsPanel
           projectId={projectId}
           onAddAssetToCanvas={handleAddAssetToCanvas}
+          onAddFrameWithGeneration={handleAddFrameWithGeneration}
         />
 
         {/* Main Panel - Canvas */}
