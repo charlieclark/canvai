@@ -109,7 +109,7 @@ export const ACTION_PRESETS: ActionPreset[] = [
     id: "extend",
     label: "Extend Image",
     description: "Expand the image beyond its current boundaries",
-    promptPrefix: "Extend and expand this image outward.",
+    promptPrefix: "Extend and expand this image outward into the surrounding whitespace. Do not modify the original image.",
   },
   {
     id: "enhance",

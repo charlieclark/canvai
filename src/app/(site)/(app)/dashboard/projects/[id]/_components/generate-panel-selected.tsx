@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Sparkles, Plus, Coins } from "lucide-react";
+import { Sparkles, Plus, Coins, Focus } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
@@ -177,6 +177,15 @@ export function GeneratePanelSelected({
     setFrameResolution(detectedRes);
   }, [editor, generateFrameId]);
 
+  // Center the frame in the viewport
+  const centerFrame = useCallback(() => {
+    const shape = editor.getShape(generateFrameId);
+    if (!shape) return;
+    const bounds = editor.getShapePageBounds(shape);
+    if (!bounds) return;
+    editor.zoomToBounds(bounds, { animation: { duration: 200 } });
+  }, [editor, generateFrameId]);
+
   // Resize frame when aspect ratio or resolution changes
   const resizeFrame = useCallback(
     (newAspectRatio: AspectRatio, newResolution: Resolution) => {
@@ -196,6 +205,16 @@ export function GeneratePanelSelected({
           name: `${ratioInfo?.label ?? newAspectRatio} - ${resolutionLabel}`,
         },
       });
+
+      // Center the frame after resizing
+      // Small delay to ensure the shape update is complete
+      setTimeout(() => {
+        const updatedShape = editor.getShape(generateFrameId);
+        if (!updatedShape) return;
+        const bounds = editor.getShapePageBounds(updatedShape);
+        if (!bounds) return;
+        editor.zoomToBounds(bounds, { animation: { duration: 200 } });
+      }, 50);
     },
     [editor, generateFrameId],
   );
@@ -223,6 +242,7 @@ export function GeneratePanelSelected({
         ? prev.filter((id) => id !== styleId)
         : [...prev, styleId],
     );
+    centerFrame();
   };
 
   // Toggle filter selection
@@ -232,6 +252,19 @@ export function GeneratePanelSelected({
         ? prev.filter((id) => id !== filterId)
         : [...prev, filterId],
     );
+    centerFrame();
+  };
+
+  // Handle action selection
+  const handleActionSelect = (actionId: string) => {
+    setSelectedAction((prev) => (prev === actionId ? null : actionId));
+    centerFrame();
+  };
+
+  // Handle prompt change
+  const handlePromptChange = (value: string) => {
+    setPrompt(value);
+    centerFrame();
   };
 
   // Export frame as image for preview
@@ -409,9 +442,7 @@ export function GeneratePanelSelected({
                 <Tooltip key={action.id}>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() =>
-                        setSelectedAction(isSelected ? null : action.id)
-                      }
+                      onClick={() => handleActionSelect(action.id)}
                       className={cn(
                         "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
                         isSelected
@@ -502,7 +533,7 @@ export function GeneratePanelSelected({
                     src={framePreviewUrl}
                     alt="Frame preview"
                     fill
-                    className="object-contain"
+                    className="object-contain w-full h-full"
                     unoptimized
                   />
                 ) : (
@@ -516,8 +547,8 @@ export function GeneratePanelSelected({
             </div>
 
             {/* Frame Size Controls */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
                 <Label htmlFor="frame-aspect-ratio" className="text-xs">
                   Aspect Ratio
                 </Label>
@@ -539,7 +570,7 @@ export function GeneratePanelSelected({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="flex-1 space-y-1.5">
                 <Label htmlFor="frame-resolution" className="text-xs">
                   Resolution
                 </Label>
@@ -561,6 +592,23 @@ export function GeneratePanelSelected({
                   </SelectContent>
                 </Select>
               </div>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={centerFrame}
+                      className="h-8 w-8 shrink-0"
+                    >
+                      <Focus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Center frame in view</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Prompt input */}
@@ -573,7 +621,7 @@ export function GeneratePanelSelected({
                 id="prompt"
                 placeholder="Add extra details or leave empty for automatic transformation..."
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => handlePromptChange(e.target.value)}
                 rows={3}
                 className="resize-none"
               />
