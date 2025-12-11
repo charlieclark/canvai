@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Banana, Frame, LayoutGrid, Sparkles, Upload } from "lucide-react";
+import { Banana, Frame, LayoutGrid, Palette, Sparkles, Upload } from "lucide-react";
 import { WaveTransition, darkToCreamWave } from "./wave-transition";
 
 const features = [
@@ -25,7 +25,7 @@ const features = [
   {
     title: "Nano Banana Pro",
     description:
-      "Convert your composed frames into polished images using our fine-tuned AI model. From sketch to stunning in seconds.",
+      "Convert your composed frames into polished images using best-in-class AI models. From sketch to stunning in seconds.",
     icon: Banana,
     gradient: "from-yellow-400 to-orange-500",
     delay: 0.2,
@@ -45,6 +45,14 @@ const features = [
     icon: Upload,
     gradient: "from-amber-400 to-yellow-500",
     delay: 0.4,
+  },
+  {
+    title: "Style Presets",
+    description:
+      "Choose from Cinematic, Anime, Oil Painting, Pixel Art, and more. Transform your work with one-click artistic styles.",
+    icon: Palette,
+    gradient: "from-emerald-400 to-teal-500",
+    delay: 0.5,
   },
 ];
 

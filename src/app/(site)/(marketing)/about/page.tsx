@@ -56,7 +56,7 @@ export default function AboutPage() {
       <p>
         Whether you&apos;re a concept artist exploring ideas, a game developer
         creating assets, or just someone who loves to experiment with AI
-        art—CanvAI gives you the tools to move from rough sketch to polished
+        art—CanvAi gives you the tools to move from rough sketch to polished
         output in seconds.
       </p>
 
