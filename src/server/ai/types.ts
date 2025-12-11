@@ -16,7 +16,7 @@ export interface ModelInput {
  */
 export interface ImageGenerationInput extends ModelInput {
   prompt: string;
-  referenceImage?: string; // Base64 data URL or URL
+  referenceImage?: string; // URL
   width?: number;
   height?: number;
   numOutputs?: number;

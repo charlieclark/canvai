@@ -93,7 +93,11 @@ async function checkGenerationAccess(
   // Fall back to user's own API key (currently only supports Replicate keys)
   // TODO: Add support for user-provided fal.ai keys
   if (user.replicateApiKey) {
-    return { apiKey: user.replicateApiKey, provider: "replicate", useCredits: false };
+    return {
+      apiKey: user.replicateApiKey,
+      provider: "replicate",
+      useCredits: false,
+    };
   }
 
   // No credits and no API key
@@ -131,7 +135,10 @@ const aspectRatioValues = ASPECT_RATIOS.map((r) => r.value) as [
   ...AspectRatio[],
 ];
 const aspectRatioSchema = z.enum(aspectRatioValues);
-const resolutionSchema = z.union([z.literal(1), z.literal(2)]) as z.ZodType<Resolution>;
+const resolutionSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+]) as z.ZodType<Resolution>;
 
 export const generationRouter = createTRPCRouter({
   /**
@@ -169,7 +176,7 @@ export const generationRouter = createTRPCRouter({
         prompt: z.string().min(1).max(2000),
         aspectRatio: aspectRatioSchema,
         resolution: resolutionSchema.optional().default(DEFAULT_RESOLUTION),
-        referenceImage: z.string().optional(), // Base64 data URL from frame export
+        referenceImage: z.string().optional(), // hosted blob url
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -199,7 +206,10 @@ export const generationRouter = createTRPCRouter({
         });
       }
 
-      const dimensions = getGenerationDimensions(input.aspectRatio, input.resolution);
+      const dimensions = getGenerationDimensions(
+        input.aspectRatio,
+        input.resolution,
+      );
 
       // Create generation record
       const generation = await ctx.db.generation.create({
@@ -211,6 +221,7 @@ export const generationRouter = createTRPCRouter({
           height: dimensions.height,
           status: "PENDING",
           type: "FRAME",
+          referenceImageUrl: input.referenceImage,
         },
       });
 
@@ -312,7 +323,10 @@ export const generationRouter = createTRPCRouter({
       }
 
       // Get dimensions for the selected aspect ratio
-      const dimensions = getGenerationDimensions(input.aspectRatio, DEFAULT_RESOLUTION);
+      const dimensions = getGenerationDimensions(
+        input.aspectRatio,
+        DEFAULT_RESOLUTION,
+      );
 
       // Create generation record
       const generation = await ctx.db.generation.create({
@@ -426,12 +440,16 @@ export const generationRouter = createTRPCRouter({
       if (generation.replicateId) {
         // Detect which provider was used from the prediction ID format
         const provider = detectProviderFromPredictionId(generation.replicateId);
-        
+
         // Get API key for the detected provider
         const apiKey = getApiKeyForPolling(provider, ctx.user.replicateApiKey);
 
         try {
-          const prediction = await getPrediction(generation.replicateId, apiKey, provider);
+          const prediction = await getPrediction(
+            generation.replicateId,
+            apiKey,
+            provider,
+          );
 
           const output = isArray(prediction.output)
             ? prediction.output[0]
@@ -451,11 +469,12 @@ export const generationRouter = createTRPCRouter({
               });
               return updated;
             } else {
-              const errorMessage = "Failed to download and upload generated image";
-              console.error(
-                `[Generation ${generation.id}] ${errorMessage}`,
-                { replicateId: generation.replicateId, output },
-              );
+              const errorMessage =
+                "Failed to download and upload generated image";
+              console.error(`[Generation ${generation.id}] ${errorMessage}`, {
+                replicateId: generation.replicateId,
+                output,
+              });
               // Refund credit if this generation used credits
               if (generation.usedCredits) {
                 await refundCredit(ctx.db, ctx.user.id);
@@ -479,7 +498,11 @@ export const generationRouter = createTRPCRouter({
               `Generation ${prediction.status === "canceled" ? "was canceled" : "failed"}`;
             console.error(
               `[Generation ${generation.id}] Provider prediction ${prediction.status}`,
-              { predictionId: generation.replicateId, provider, error: prediction.error },
+              {
+                predictionId: generation.replicateId,
+                provider,
+                error: prediction.error,
+              },
             );
             // Refund credit if this generation used credits
             if (generation.usedCredits) {
@@ -502,7 +525,11 @@ export const generationRouter = createTRPCRouter({
               : "Unknown error while polling generation status";
           console.error(
             `[Generation ${generation.id}] Error polling provider`,
-            { predictionId: generation.replicateId, provider, error: pollError },
+            {
+              predictionId: generation.replicateId,
+              provider,
+              error: pollError,
+            },
           );
           // Refund credit if this generation used credits
           if (generation.usedCredits) {

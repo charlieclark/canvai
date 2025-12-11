@@ -14,20 +14,21 @@ model Project {
 }
 
 model Generation {
-  id           String           @id @default(cuid())
-  createdAt    DateTime         @default(now())
-  projectId    String
-  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  prompt       String
-  imageUrl     String? // Vercel Blob URL (null until completed)
-  aspectRatio  String // e.g., "1:1", "16:9"
-  width        Int
-  height       Int
-  status       GenerationStatus @default(PENDING)
-  type         GenerationType   @default(FRAME)
-  replicateId  String? // For polling status
-  errorMessage String? // Error details when status is FAILED
-  usedCredits  Boolean          @default(false) // Whether subscription credits were used
+  id                String           @id @default(cuid())
+  createdAt         DateTime         @default(now())
+  projectId         String
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  prompt            String
+  imageUrl          String? // Vercel Blob URL (null until completed)
+  referenceImageUrl String? // Vercel Blob URL for the reference image used in generation
+  aspectRatio       String // e.g., "1:1", "16:9"
+  width             Int
+  height            Int
+  status            GenerationStatus @default(PENDING)
+  type              GenerationType   @default(FRAME)
+  replicateId       String? // For polling status
+  errorMessage      String? // Error details when status is FAILED
+  usedCredits       Boolean          @default(false) // Whether subscription credits were used
 
   @@index([projectId])
 }
