@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useCallback } from "react";
 import type { Editor, TLShapeId } from "tldraw";
+import { toast } from "sonner";
 
 export default function ProjectPage() {
   const params = useParams();
@@ -24,6 +25,7 @@ export default function ProjectPage() {
   const [lastSelectedFrameId, setLastSelectedFrameId] =
     useState<TLShapeId | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [frameCount, setFrameCount] = useState(0);
 
   const utils = api.useUtils();
 
@@ -31,6 +33,8 @@ export default function ProjectPage() {
     { id: projectId },
     { enabled: !!projectId },
   );
+
+  const { data: user } = api.user.getCurrent.useQuery();
 
   const updateProjectName = api.project.update.useMutation({
     onSuccess: () => {
@@ -44,10 +48,47 @@ export default function ProjectPage() {
     },
   });
 
-  const handleEditorMount = useCallback((editorInstance: Editor) => {
-    setEditor(editorInstance);
-    editorInstance.user.updateUserPreferences({ isSnapMode: true });
+  const toggleTemplate = api.project.toggleTemplate.useMutation({
+    onSuccess: (data) => {
+      void utils.project.getById.invalidate({ id: projectId });
+      if (data.isTemplate) {
+        toast.success("Template created!");
+      } else {
+        toast.success("Template removed");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  // Count frames from editor
+  const updateFrameCount = useCallback((editorInstance: Editor) => {
+    const shapes = editorInstance.getCurrentPageShapes();
+    const frames = shapes.filter((shape) => shape.type === "frame");
+    setFrameCount(frames.length);
   }, []);
+
+  const handleEditorMount = useCallback(
+    (editorInstance: Editor) => {
+      setEditor(editorInstance);
+      editorInstance.user.updateUserPreferences({ isSnapMode: true });
+
+      // Initial frame count
+      updateFrameCount(editorInstance);
+
+      // Listen for shape changes to update frame count
+      const cleanup = editorInstance.store.listen(
+        () => {
+          updateFrameCount(editorInstance);
+        },
+        { source: "user", scope: "document" },
+      ) as () => void;
+
+      return cleanup;
+    },
+    [updateFrameCount],
+  );
 
   const handleFrameSelect = useCallback((frameId: TLShapeId | null) => {
     setSelectedFrameId(frameId);
@@ -70,6 +111,19 @@ export default function ProjectPage() {
   const handleDeleteProject = useCallback(() => {
     deleteProject.mutate({ id: projectId });
   }, [deleteProject, projectId]);
+
+  const handleToggleTemplate = useCallback(
+    (isTemplate: boolean, slug?: string) => {
+      toggleTemplate.mutate({
+        id: projectId,
+        isTemplate,
+        templateSlug: slug,
+      });
+    },
+    [projectId, toggleTemplate],
+  );
+
+  const isAdmin = user?.role === "ADMIN";
 
   if (isLoading) {
     return (
@@ -102,6 +156,12 @@ export default function ProjectPage() {
         onUpdateName={handleUpdateName}
         onDelete={handleDeleteProject}
         isUpdatingName={updateProjectName.isPending}
+        isAdmin={isAdmin}
+        isTemplate={project.isTemplate}
+        templateSlug={project.templateSlug}
+        frameCount={frameCount}
+        onToggleTemplate={handleToggleTemplate}
+        isTogglingTemplate={toggleTemplate.isPending}
       />
 
       {/* Three-panel layout */}

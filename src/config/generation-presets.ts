@@ -95,21 +95,21 @@ export const ACTION_PRESETS: ActionPreset[] = [
     label: "Auto",
     description: "Convert frame contents into a polished, cohesive image",
     promptPrefix:
-      "Transform the elements in this frame into a polished, cohesive image with unified lighting, style, and composition. Remove any shapes, lines or text that are annotations.",
+      "Transform the elements in this frame into a polished, cohesive image with unified lighting, style, and composition.",
     isDefault: true,
   },
   {
     id: "convert-sketch",
     label: "Convert Sketch",
     description: "Turn a rough sketch into a finished image",
-    promptPrefix:
-      "Convert this sketch into a fully rendered image. Remove any shapes, lines or text that are annotations.",
+    promptPrefix: "Convert this sketch into a fully rendered image.",
   },
   {
     id: "extend",
     label: "Extend Image",
     description: "Expand the image beyond its current boundaries",
-    promptPrefix: "Extend and expand this image outward into the surrounding whitespace. Do not modify the original image.",
+    promptPrefix:
+      "Extend and expand this image outward into the surrounding whitespace. Do not modify the original image, unless there are annotations.",
   },
   {
     id: "enhance",
@@ -196,7 +196,9 @@ export function buildEnhancedPrompt({
   selectedStyles: string[];
   selectedFilters: string[];
 }): string {
-  const parts: string[] = [];
+  const parts: string[] = [
+    "Remove any shapes, lines or text that are annotations.",
+  ];
 
   // Add action prefix (always have one since transform-frame is default)
   const action = ACTION_PRESETS.find((a) => a.id === selectedAction);

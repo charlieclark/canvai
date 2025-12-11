@@ -1,12 +1,14 @@
 model Project {
-  id          String       @id @default(cuid())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  name        String
-  userId      String
-  user        User         @relation(fields: [userId], references: [id])
-  snapshot    Json? // tldraw document snapshot
-  generations Generation[]
+  id           String       @id @default(cuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  name         String
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  snapshot     Json? // tldraw document snapshot
+  generations  Generation[]
+  isTemplate   Boolean      @default(false)
+  templateSlug String?      @unique // e.g. "my-design-template"
 
   @@index([userId])
 }
