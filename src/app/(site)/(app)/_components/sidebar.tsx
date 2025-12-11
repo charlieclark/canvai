@@ -121,8 +121,8 @@ export function AdminSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Hide sidebar on project detail pages
-  if (isProjectDetailPage(pathname)) {
+  // Hide sidebar on project detail pages and root dashboard
+  if (isProjectDetailPage(pathname) || pathname === "/dashboard") {
     return null;
   }
 

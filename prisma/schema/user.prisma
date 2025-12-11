@@ -5,6 +5,9 @@ model User {
   email     String
   role      Role     @default(MEMBER)
 
+  // Onboarding
+  onboardingCompletedAt DateTime? // When initial onboarding was completed
+
   // API Keys
   replicateApiKey String? // User's personal Replicate API token
 
