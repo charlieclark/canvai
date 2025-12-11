@@ -18,7 +18,7 @@ const geist = Geist({
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseProductionUrl()),
   title: "CanvAi",
-  description: "Showcase the things that make you, you.",
+  description: "The infinite canvas where rough sketches become polished AI art.",
   icons: [{ rel: "icon", url: "/favicon.png" }],
   openGraph: {
     type: "website",
