@@ -41,10 +41,6 @@ export default function SubscriptionUpgrade({ userEmail }: Props) {
                 200 image generation credits per month
               </li>
               <li className="flex items-center">
-                <span className="mr-2">⚡</span>
-                No API key setup required
-              </li>
-              <li className="flex items-center">
                 <span className="mr-2">🔄</span>
                 Credits refresh every billing cycle
               </li>

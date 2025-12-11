@@ -15,6 +15,7 @@ import {
 import {
   ArrowLeft,
   Check,
+  Coins,
   Copy,
   ExternalLink,
   Globe,
@@ -26,6 +27,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/trpc/react";
 
 export type SaveStatus = "idle" | "pending" | "saving" | "saved";
 
@@ -147,6 +149,9 @@ export function ProjectHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Credits Indicator */}
+        <CreditsIndicator />
+
         {/* Save Status Indicator */}
         <SaveStatusIndicator status={saveStatus} />
 
@@ -313,4 +318,49 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (!isUnsaved) return null;
 
   return <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />;
+}
+
+function CreditsIndicator() {
+  const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
+
+  if (!creditsStatus) return null;
+
+  // Only show for subscribed users with credits
+  if (creditsStatus.plan !== "SUBSCRIBED") {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link href="/dashboard/billing">
+            <div className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-2.5 py-1 dark:border-violet-800 dark:bg-violet-950/50">
+              <Coins className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+              <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
+                {creditsStatus.credits} credits
+              </span>
+            </div>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Get more credits</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link href="/dashboard/billing">
+          <div className="flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 dark:border-amber-800 dark:bg-amber-950/50">
+            <Coins className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+              {creditsStatus.credits} credits
+            </span>
+          </div>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Remaining credits this period</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 }

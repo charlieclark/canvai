@@ -21,11 +21,11 @@ const navigation = [
     href: "/dashboard/billing",
     icon: CreditCard,
   },
-  {
-    name: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
+  // {
+  //   name: "Settings",
+  //   href: "/dashboard/settings",
+  //   icon: Settings,
+  // },
 ];
 
 interface SidebarNavItemProps {
@@ -106,7 +106,7 @@ function CreditsCard() {
         </span>
       </div>
       <p className="mb-3 text-sm text-violet-700 dark:text-violet-300">
-        Get 200 credits/month and skip the API setup.
+        Get 200 credits/month for unlimited generations.
       </p>
       <Button size="sm" className="w-full" asChild>
         <Link href="/dashboard/billing">

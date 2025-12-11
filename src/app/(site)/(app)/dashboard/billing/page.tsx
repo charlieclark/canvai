@@ -301,10 +301,6 @@ export default function BillingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-600" />
-                  <span>No API key setup required</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
                   <span>Credits reset every billing cycle</span>
                 </li>
                 <li className="flex items-center gap-2">
