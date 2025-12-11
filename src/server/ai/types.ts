@@ -55,3 +55,4 @@ export interface ImageModelConfig<TInput extends ModelInput = ModelInput> {
   /** Map our standardized input to the model's specific input format for each provider */
   mapInput: (input: TInput, provider: ImageProvider) => Record<string, unknown>;
 }
+

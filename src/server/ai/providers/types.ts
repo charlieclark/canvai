@@ -26,3 +26,4 @@ export interface IImageGenerationProvider {
  * Factory function type for creating providers
  */
 export type ProviderFactory = (apiToken: string) => IImageGenerationProvider;
+

@@ -73,3 +73,4 @@ export class ReplicateProvider implements IImageGenerationProvider {
 export function createReplicateProvider(apiToken: string): ReplicateProvider {
   return new ReplicateProvider(apiToken);
 }
+

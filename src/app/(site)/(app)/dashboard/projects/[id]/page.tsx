@@ -128,9 +128,13 @@ export default function ProjectPage() {
         <GeneratePanel
           projectId={projectId}
           editor={editor}
-          selectedFrameId={selectedFrameId}
+          generateFrameId={lastSelectedFrameId}
           onAddFrame={() => {
-            editor?.selectNone();
+            if (selectedFrameId === lastSelectedFrameId) {
+              // TODO: add new frame
+            } else {
+              // TODO: frame selection
+            }
           }}
         />
       </div>

@@ -160,3 +160,4 @@ interface FalImageResult {
 export function createFalProvider(apiToken: string): FalProvider {
   return new FalProvider(apiToken);
 }
+

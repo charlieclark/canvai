@@ -141,3 +141,4 @@ export async function runGeneration<T extends ModelInput>(
   const prediction = await startGeneration(model, input, apiToken, provider);
   return waitForPrediction(prediction.id, apiToken, provider);
 }
+

@@ -69,3 +69,4 @@ export const imagenFast: ImageModelConfig<ImageGenerationInput> = {
     };
   },
 };
+
