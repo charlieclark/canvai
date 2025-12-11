@@ -10,12 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Frame, Plus, Coins } from "lucide-react";
-import type { Editor, TLShapeId } from "tldraw";
+import type { Editor } from "tldraw";
 import { api } from "@/trpc/react";
 import {
   ASPECT_RATIOS,
   RESOLUTIONS,
-  DEFAULT_RESOLUTION,
   getGenerationDimensions,
   type AspectRatio,
   type Resolution,
@@ -23,16 +22,23 @@ import {
 import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 import { useState } from "react";
 
-const FRAME_DISPLAY_SCALE = 1;
-
 interface GeneratePanelEmptyProps {
   editor: Editor | null;
+  newFrameAspectRatio: AspectRatio;
+  onNewFrameAspectRatioChange: (ratio: AspectRatio) => void;
+  resolution: Resolution;
+  onResolutionChange: (resolution: Resolution) => void;
+  onCreateFrame: () => void;
 }
 
-export function GeneratePanelEmpty({ editor }: GeneratePanelEmptyProps) {
-  const [newFrameAspectRatio, setNewFrameAspectRatio] =
-    useState<AspectRatio>("1:1");
-  const [resolution, setResolution] = useState<Resolution>(DEFAULT_RESOLUTION);
+export function GeneratePanelEmpty({
+  editor,
+  newFrameAspectRatio,
+  onNewFrameAspectRatioChange,
+  resolution,
+  onResolutionChange,
+  onCreateFrame,
+}: GeneratePanelEmptyProps) {
   const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
     useState(false);
 
@@ -42,73 +48,6 @@ export function GeneratePanelEmpty({ editor }: GeneratePanelEmptyProps) {
   const selectedRatio = ASPECT_RATIOS.find(
     (r) => r.value === newFrameAspectRatio,
   );
-
-  // Create a new frame on the canvas
-  const handleCreateFrame = () => {
-    if (!editor) return;
-
-    const ratio = ASPECT_RATIOS.find((r) => r.value === newFrameAspectRatio);
-    if (!ratio) return;
-
-    // Use resolution-based dimensions for the frame
-    const dimensions = getGenerationDimensions(newFrameAspectRatio, resolution);
-    const displayWidth = dimensions.width * FRAME_DISPLAY_SCALE;
-    const displayHeight = dimensions.height * FRAME_DISPLAY_SCALE;
-
-    const existingFrames = editor
-      .getCurrentPageShapes()
-      .filter((shape) => shape.type === "frame");
-
-    const overlapsExistingFrame = (x: number, y: number) => {
-      const padding = 40;
-      const newLeft = x;
-      const newRight = x + displayWidth;
-      const newTop = y;
-      const newBottom = y + displayHeight;
-
-      return existingFrames.some((frame) => {
-        const bounds = editor.getShapeGeometry(frame).bounds;
-        const frameLeft = frame.x - padding;
-        const frameRight = frame.x + bounds.width + padding;
-        const frameTop = frame.y - padding;
-        const frameBottom = frame.y + bounds.height + padding;
-
-        return (
-          newLeft < frameRight &&
-          newRight > frameLeft &&
-          newTop < frameBottom &&
-          newBottom > frameTop
-        );
-      });
-    };
-
-    let x = -displayWidth / 2;
-    const y = -displayHeight / 2;
-    const stepSize = displayWidth + 60;
-
-    for (let i = 0; i < 50; i++) {
-      if (!overlapsExistingFrame(x, y)) break;
-      x += stepSize;
-    }
-
-    const frameId = `shape:frame-${Date.now()}` as TLShapeId;
-
-    const resolutionLabel = resolution === 2 ? "2K" : "1K";
-    editor.createShape({
-      id: frameId,
-      type: "frame",
-      x,
-      y,
-      props: {
-        w: displayWidth,
-        h: displayHeight,
-        name: `${ratio.label} - ${resolutionLabel}`,
-      },
-    });
-
-    editor.select(frameId);
-    editor.zoomToSelection({ animation: { duration: 200 } });
-  };
 
   // Credits display component
   const CreditsDisplay = () => {
@@ -151,7 +90,7 @@ export function GeneratePanelEmpty({ editor }: GeneratePanelEmptyProps) {
               <Select
                 value={newFrameAspectRatio}
                 onValueChange={(v) =>
-                  setNewFrameAspectRatio(v as AspectRatio)
+                  onNewFrameAspectRatioChange(v as AspectRatio)
                 }
               >
                 <SelectTrigger id="new-frame-aspect-ratio">
@@ -171,7 +110,7 @@ export function GeneratePanelEmpty({ editor }: GeneratePanelEmptyProps) {
               <Label htmlFor="resolution">Resolution</Label>
               <Select
                 value={String(resolution)}
-                onValueChange={(v) => setResolution(Number(v) as Resolution)}
+                onValueChange={(v) => onResolutionChange(Number(v) as Resolution)}
               >
                 <SelectTrigger id="resolution">
                   <SelectValue />
@@ -191,7 +130,7 @@ export function GeneratePanelEmpty({ editor }: GeneratePanelEmptyProps) {
             </div>
 
             <Button
-              onClick={handleCreateFrame}
+              onClick={onCreateFrame}
               disabled={!editor}
               className="w-full"
             >
