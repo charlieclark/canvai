@@ -108,6 +108,9 @@ export const route_apiCronCheckAutoPosts = () => {
 export const route_apiCronProcessEmailQueue = () => {
   return r(`/api/cron/process-email-queue`);
 };
+export const route_apiCronCheckCreditsExhausted = () => {
+  return r(`/api/cron/check-credits-exhausted`);
+};
 export const route_apiUpload = () => {
   return r(`/api/upload`);
 };

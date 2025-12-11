@@ -69,7 +69,7 @@ export function AssetGenerationModal({
   const handleGenerate = () => {
     if (!prompt.trim()) return;
 
-    const baseLines = transparentBackground
+    const extras = transparentBackground
       ? [
           "Make sure the entire object is in view, and not cropped.",
           "Generate the object on a white background.",
@@ -79,7 +79,7 @@ export function AssetGenerationModal({
     setIsGenerating(true);
     generateAssetMutation.mutate({
       projectId,
-      prompt: [...baseLines, prompt.trim()].join("\n"),
+      prompt: [prompt.trim(), ...extras].join("\n"),
       aspectRatio,
       transparentBackground,
     });

@@ -1,3 +1,7 @@
+/**
+ * Avoid using this, as the queue cron isn't running
+ */
+
 import { db } from "@/server/db";
 import { sendEmail } from "./shared";
 import pLimit from "p-limit";

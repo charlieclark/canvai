@@ -2,7 +2,6 @@ import { env } from "@/env";
 import { addMinutes, isAfter } from "date-fns";
 import { type CreateEmailOptions, Resend } from "resend";
 import { db } from "@/server/db";
-import { queueEmail } from "./queue";
 import { omit } from "lodash";
 
 const BASE_EMAIL = "hello@canvai.co";
@@ -75,7 +74,7 @@ export const sendDebouncedEmail = async ({
   }
 
   // Queue the email
-  await queueEmail({ to, html, subject, userId });
+  await sendEmail({ to, html, subject });
 
   // Record the notification
   await db.emailNotification.create({
