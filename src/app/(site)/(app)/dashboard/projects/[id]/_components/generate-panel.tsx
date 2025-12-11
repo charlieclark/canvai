@@ -50,12 +50,14 @@ interface GeneratePanelProps {
   projectId: string;
   editor: Editor | null;
   selectedFrameId: TLShapeId | null;
+  onFrameSelect: (frameId: TLShapeId | null) => void;
 }
 
 export function GeneratePanel({
   projectId,
   editor,
   selectedFrameId,
+  onFrameSelect,
 }: GeneratePanelProps) {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
@@ -626,7 +628,7 @@ export function GeneratePanel({
             {/* Frame Preview */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Frame Preview</Label>
-              <div className="bg-muted relative aspect-video overflow-hidden rounded-lg border-2 border-primary/50">
+              <div className="bg-muted border-primary/50 relative aspect-video overflow-hidden rounded-lg border-2">
                 {framePreviewUrl ? (
                   <Image
                     src={framePreviewUrl}
@@ -673,10 +675,18 @@ export function GeneratePanel({
         </ScrollArea>
 
         {/* Sticky generate button */}
-        <div className="border-t p-4">
+        <div className="space-y-2 border-t p-4">
           <Button onClick={handleGenerateClick} className="w-full" size="lg">
             <Sparkles className="mr-2 h-4 w-4" />
             Generate
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => onFrameSelect(null)}
+            className="w-full"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Frame
           </Button>
         </div>
       </div>

@@ -124,6 +124,10 @@ export default function ProjectPage() {
           projectId={projectId}
           editor={editor}
           selectedFrameId={selectedFrameId}
+          onFrameSelect={() => {
+            handleFrameSelect(null);
+            editor?.selectNone();
+          }}
         />
       </div>
     </div>
