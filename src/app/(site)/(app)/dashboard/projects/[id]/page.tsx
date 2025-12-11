@@ -192,8 +192,11 @@ export default function ProjectPage() {
           onAddFrame={() => {
             if (selectedFrameId === lastSelectedFrameId) {
               // TODO: add new frame
+              editor?.selectNone();
+              setLastSelectedFrameId(null);
             } else {
               // TODO: frame selection
+              setLastSelectedFrameId(null);
             }
           }}
         />

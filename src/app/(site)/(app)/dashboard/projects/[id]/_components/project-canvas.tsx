@@ -185,6 +185,15 @@ export function ProjectCanvas({
 
       editor.zoomToFit();
 
+      // Auto-select frame if there's only one
+      const frames = editor
+        .getCurrentPageShapes()
+        .filter((shape) => shape.type === "frame");
+      if (frames.length === 1 && frames[0]) {
+        editor.select(frames[0].id);
+        onFrameSelect(frames[0].id);
+      }
+
       // Set default styles
       editor.setStyleForNextShapes(DefaultFontStyle, "sans");
       editor.setStyleForNextShapes(DefaultSizeStyle, "l");
