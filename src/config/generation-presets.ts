@@ -94,8 +94,7 @@ export const ACTION_PRESETS: ActionPreset[] = [
     id: "transform-frame",
     label: "Auto",
     description: "Convert frame contents into a polished, cohesive image",
-    promptPrefix:
-      "Transform the elements in this frame into a polished, cohesive image with unified lighting, style, and composition.",
+    promptPrefix: "",
     isDefault: true,
   },
   {
@@ -235,16 +234,18 @@ export function buildEnhancedPrompt({
   userPrompt,
   selectedAction,
   selectedComposition,
-  selectedStyles,
+  selectedStyle,
   selectedFilters,
 }: {
   userPrompt: string;
   selectedAction: string | null;
   selectedComposition: string | null;
-  selectedStyles: string[];
+  selectedStyle: string | null;
   selectedFilters: string[];
 }): string {
-  const parts: string[] = [
+  const parts: string[] = [];
+
+  const extras = [
     "Remove any shapes, lines or text that are annotations.",
     "Ensure the generated image is cohesive and high quality.",
   ];
@@ -263,7 +264,9 @@ export function buildEnhancedPrompt({
     parts.push(composition.promptModifier);
   } else {
     // Fallback to Guided composition when none selected
-    const guidedComposition = COMPOSITION_PRESETS.find((c) => c.id === "guided");
+    const guidedComposition = COMPOSITION_PRESETS.find(
+      (c) => c.id === "guided",
+    );
     if (guidedComposition) {
       parts.push(guidedComposition.promptModifier);
     }
@@ -275,14 +278,12 @@ export function buildEnhancedPrompt({
     parts.push(trimmedPrompt);
   }
 
-  // Add style modifiers (use Auto style as fallback if none selected)
-  const styleModifiers = selectedStyles
-    .map((id) => STYLE_PRESETS.find((s) => s.id === id)?.promptModifier)
-    .filter(Boolean);
-  if (styleModifiers.length > 0) {
-    parts.push(styleModifiers.join(", "));
+  // Add style modifier (use Auto style as fallback if none selected)
+  const style = STYLE_PRESETS.find((s) => s.id === selectedStyle);
+  if (style) {
+    parts.push(style.promptModifier);
   } else {
-    // Fallback to Auto style when no styles selected
+    // Fallback to Auto style when no style selected
     const autoStyle = STYLE_PRESETS.find((s) => s.id === "auto");
     if (autoStyle) {
       parts.push(autoStyle.promptModifier);
@@ -297,5 +298,5 @@ export function buildEnhancedPrompt({
     parts.push(filterModifiers.join(", "));
   }
 
-  return parts.join(" ");
+  return [...parts, ...extras].join(" ");
 }

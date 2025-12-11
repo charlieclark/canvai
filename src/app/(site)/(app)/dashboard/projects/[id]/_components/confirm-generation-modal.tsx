@@ -28,7 +28,7 @@ interface GenerationSelections {
   userPrompt: string;
   selectedAction: string | null;
   selectedComposition: string | null;
-  selectedStyles: string[];
+  selectedStyle: string | null;
   selectedFilters: string[];
 }
 
@@ -128,9 +128,9 @@ export function ConfirmGenerationModal({
         ?.label
     : null;
 
-  const styleLabels = selections.selectedStyles
-    .map((id) => STYLE_PRESETS.find((s) => s.id === id)?.label)
-    .filter(Boolean);
+  const styleLabel = selections.selectedStyle
+    ? STYLE_PRESETS.find((s) => s.id === selections.selectedStyle)?.label
+    : null;
 
   const filterLabels = selections.selectedFilters
     .map((id) => ENHANCEMENT_FILTERS.find((f) => f.id === id)?.label)
@@ -195,13 +195,13 @@ export function ConfirmGenerationModal({
               </div>
             )}
 
-            {/* Styles */}
-            {styleLabels.length > 0 && (
+            {/* Style */}
+            {styleLabel && (
               <div className="flex items-start gap-2">
                 <span className="text-muted-foreground min-w-20 text-xs font-medium">
                   Style
                 </span>
-                <span className="text-sm">{styleLabels.join(", ")}</span>
+                <span className="text-sm">{styleLabel}</span>
               </div>
             )}
 

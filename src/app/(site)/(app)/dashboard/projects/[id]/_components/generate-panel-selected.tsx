@@ -63,7 +63,7 @@ export function GeneratePanelSelected({
   const [prompt, setPrompt] = useState("");
 
   // Generation preset states
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(["auto"]);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>("auto");
   const [selectedAction, setSelectedAction] = useState<string | null>(
     DEFAULT_ACTION_ID,
   );
@@ -240,13 +240,9 @@ export function GeneratePanelSelected({
     }
   };
 
-  // Toggle style selection
-  const toggleStyle = (styleId: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(styleId)
-        ? prev.filter((id) => id !== styleId)
-        : [...prev, styleId],
-    );
+  // Handle style selection (single select)
+  const handleStyleSelect = (styleId: string) => {
+    setSelectedStyle((prev) => (prev === styleId ? null : styleId));
   };
 
   // Toggle filter selection
@@ -316,7 +312,7 @@ export function GeneratePanelSelected({
       userPrompt: prompt,
       selectedAction,
       selectedComposition,
-      selectedStyles,
+      selectedStyle,
       selectedFilters,
     });
   };
@@ -350,7 +346,7 @@ export function GeneratePanelSelected({
   // Handle generation success
   const handleGenerationSuccess = () => {
     setPrompt("");
-    setSelectedStyles([]);
+    setSelectedStyle(null);
     setSelectedAction(DEFAULT_ACTION_ID);
     setSelectedComposition(DEFAULT_COMPOSITION_ID);
     setSelectedFilters([]);
@@ -585,10 +581,10 @@ export function GeneratePanelSelected({
                     <Tooltip key={style.id}>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => toggleStyle(style.id)}
+                          onClick={() => handleStyleSelect(style.id)}
                           className={cn(
                             "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
-                            selectedStyles.includes(style.id)
+                            selectedStyle === style.id
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted hover:bg-muted/80 text-foreground",
                           )}
@@ -667,7 +663,7 @@ export function GeneratePanelSelected({
           userPrompt: prompt,
           selectedAction,
           selectedComposition,
-          selectedStyles,
+          selectedStyle,
           selectedFilters,
         }}
         previewUrl={confirmModalData?.previewUrl ?? null}
