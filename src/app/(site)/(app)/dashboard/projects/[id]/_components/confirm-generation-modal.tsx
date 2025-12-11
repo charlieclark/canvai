@@ -19,6 +19,7 @@ import { getGenerationDimensions } from "@/lib/utils/image";
 import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
 import {
   ACTION_PRESETS,
+  COMPOSITION_PRESETS,
   STYLE_PRESETS,
   ENHANCEMENT_FILTERS,
 } from "@/config/generation-presets";
@@ -26,6 +27,7 @@ import {
 interface GenerationSelections {
   userPrompt: string;
   selectedAction: string | null;
+  selectedComposition: string | null;
   selectedStyles: string[];
   selectedFilters: string[];
 }
@@ -121,6 +123,11 @@ export function ConfirmGenerationModal({
     ? ACTION_PRESETS.find((a) => a.id === selections.selectedAction)?.label
     : null;
 
+  const compositionLabel = selections.selectedComposition
+    ? COMPOSITION_PRESETS.find((c) => c.id === selections.selectedComposition)
+        ?.label
+    : null;
+
   const styleLabels = selections.selectedStyles
     .map((id) => STYLE_PRESETS.find((s) => s.id === id)?.label)
     .filter(Boolean);
@@ -165,6 +172,16 @@ export function ConfirmGenerationModal({
                   Action
                 </span>
                 <span className="text-sm">{actionLabel}</span>
+              </div>
+            )}
+
+            {/* Composition */}
+            {compositionLabel && (
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground min-w-20 text-xs font-medium">
+                  Composition
+                </span>
+                <span className="text-sm">{compositionLabel}</span>
               </div>
             )}
 

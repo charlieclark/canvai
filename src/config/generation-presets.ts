@@ -120,6 +120,52 @@ export const ACTION_PRESETS: ActionPreset[] = [
 ];
 
 /**
+ * Composition presets control how closely the generation follows the input
+ * These are mutually exclusive - only one can be selected at a time
+ */
+export interface CompositionPreset {
+  id: string;
+  label: string;
+  description: string;
+  promptModifier: string;
+  isDefault?: boolean;
+}
+
+export const DEFAULT_COMPOSITION_ID = "guided";
+
+export const COMPOSITION_PRESETS: CompositionPreset[] = [
+  {
+    id: "strict",
+    label: "Strict",
+    description: "Match exact composition, layout, and positioning",
+    promptModifier:
+      "Strictly preserve the exact composition, layout, and positioning of all elements from the reference. Maintain the precise spatial relationships and arrangement.",
+  },
+  {
+    id: "guided",
+    label: "Guided",
+    description: "Follow the layout but allow adjustments for visual cohesion",
+    promptModifier:
+      "Follow the general layout and composition from the reference, but make adjustments as needed for visual cohesion and quality.",
+    isDefault: true,
+  },
+  {
+    id: "inspired",
+    label: "Inspired",
+    description: "Use input as reference, prioritize natural/realistic output",
+    promptModifier:
+      "Use the reference as inspiration for the concept and elements, but prioritize generating a natural, realistic, and visually cohesive result over matching the exact layout.",
+  },
+  {
+    id: "reimagine",
+    label: "Reimagine",
+    description: "Loose interpretation, maximum creative freedom",
+    promptModifier:
+      "Freely reimagine and interpret the concept from the reference. Take creative liberties with composition, layout, and arrangement to create the best possible image.",
+  },
+];
+
+/**
  * Enhancement filters that can be toggled on/off
  * Multiple filters can be selected simultaneously
  */
@@ -188,11 +234,13 @@ export const ENHANCEMENT_FILTERS: EnhancementFilter[] = [
 export function buildEnhancedPrompt({
   userPrompt,
   selectedAction,
+  selectedComposition,
   selectedStyles,
   selectedFilters,
 }: {
   userPrompt: string;
   selectedAction: string | null;
+  selectedComposition: string | null;
   selectedStyles: string[];
   selectedFilters: string[];
 }): string {
@@ -205,6 +253,20 @@ export function buildEnhancedPrompt({
   const action = ACTION_PRESETS.find((a) => a.id === selectedAction);
   if (action) {
     parts.push(action.promptPrefix);
+  }
+
+  // Add composition modifier (controls fidelity to input)
+  const composition = COMPOSITION_PRESETS.find(
+    (c) => c.id === selectedComposition,
+  );
+  if (composition) {
+    parts.push(composition.promptModifier);
+  } else {
+    // Fallback to Guided composition when none selected
+    const guidedComposition = COMPOSITION_PRESETS.find((c) => c.id === "guided");
+    if (guidedComposition) {
+      parts.push(guidedComposition.promptModifier);
+    }
   }
 
   // Add the user's main prompt if provided

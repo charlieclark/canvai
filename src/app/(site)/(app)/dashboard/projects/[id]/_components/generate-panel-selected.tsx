@@ -37,8 +37,10 @@ import { ConfirmGenerationModal } from "./confirm-generation-modal";
 import {
   STYLE_PRESETS,
   ACTION_PRESETS,
+  COMPOSITION_PRESETS,
   ENHANCEMENT_FILTERS,
   DEFAULT_ACTION_ID,
+  DEFAULT_COMPOSITION_ID,
   buildEnhancedPrompt,
 } from "@/config/generation-presets";
 import { cn } from "@/lib/utils";
@@ -64,6 +66,9 @@ export function GeneratePanelSelected({
   const [selectedStyles, setSelectedStyles] = useState<string[]>(["auto"]);
   const [selectedAction, setSelectedAction] = useState<string | null>(
     DEFAULT_ACTION_ID,
+  );
+  const [selectedComposition, setSelectedComposition] = useState<string | null>(
+    DEFAULT_COMPOSITION_ID,
   );
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
@@ -242,7 +247,6 @@ export function GeneratePanelSelected({
         ? prev.filter((id) => id !== styleId)
         : [...prev, styleId],
     );
-    centerFrame();
   };
 
   // Toggle filter selection
@@ -252,19 +256,23 @@ export function GeneratePanelSelected({
         ? prev.filter((id) => id !== filterId)
         : [...prev, filterId],
     );
-    centerFrame();
   };
 
   // Handle action selection
   const handleActionSelect = (actionId: string) => {
     setSelectedAction((prev) => (prev === actionId ? null : actionId));
-    centerFrame();
+  };
+
+  // Handle composition selection
+  const handleCompositionSelect = (compositionId: string) => {
+    setSelectedComposition((prev) =>
+      prev === compositionId ? null : compositionId,
+    );
   };
 
   // Handle prompt change
   const handlePromptChange = (value: string) => {
     setPrompt(value);
-    centerFrame();
   };
 
   // Export frame as image for preview
@@ -307,6 +315,7 @@ export function GeneratePanelSelected({
     return buildEnhancedPrompt({
       userPrompt: prompt,
       selectedAction,
+      selectedComposition,
       selectedStyles,
       selectedFilters,
     });
@@ -343,6 +352,7 @@ export function GeneratePanelSelected({
     setPrompt("");
     setSelectedStyles([]);
     setSelectedAction(DEFAULT_ACTION_ID);
+    setSelectedComposition(DEFAULT_COMPOSITION_ID);
     setSelectedFilters([]);
     if (confirmModalData?.previewUrl) {
       URL.revokeObjectURL(confirmModalData.previewUrl);
@@ -374,120 +384,6 @@ export function GeneratePanelSelected({
       outputHeight: getGenerationDimensions(frameAspectRatio, frameResolution)
         .height,
     };
-  };
-
-  // Style selector component
-  const StyleSelector = () => {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-baseline gap-2">
-          <Label className="text-xs font-medium">Style</Label>
-          <span className="text-muted-foreground text-[10px]">Optional</span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          <TooltipProvider delayDuration={300}>
-            {STYLE_PRESETS.map((style) => {
-              const isSelected = selectedStyles.includes(style.id);
-              return (
-                <Tooltip key={style.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => toggleStyle(style.id)}
-                      className={cn(
-                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted hover:bg-muted/80 text-foreground",
-                      )}
-                    >
-                      {style.label}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{style.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </div>
-      </div>
-    );
-  };
-
-  // Action selector component
-  const ActionSelector = () => {
-    return (
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">Action</Label>
-        <div className="flex flex-wrap gap-1.5">
-          <TooltipProvider delayDuration={300}>
-            {ACTION_PRESETS.map((action) => {
-              const isSelected = selectedAction === action.id;
-              return (
-                <Tooltip key={action.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => handleActionSelect(action.id)}
-                      className={cn(
-                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted hover:bg-muted/80 text-foreground",
-                      )}
-                    >
-                      {action.label}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{action.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </div>
-      </div>
-    );
-  };
-
-  // Enhancement filters component
-  const EnhancementFilters = () => {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-baseline gap-2">
-          <Label className="text-xs font-medium">Enhancements</Label>
-          <span className="text-muted-foreground text-[10px]">Optional</span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          <TooltipProvider delayDuration={300}>
-            {ENHANCEMENT_FILTERS.map((filter) => {
-              const isSelected = selectedFilters.includes(filter.id);
-              return (
-                <Tooltip key={filter.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => toggleFilter(filter.id)}
-                      className={cn(
-                        "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted hover:bg-muted/80 text-foreground",
-                      )}
-                    >
-                      {filter.label}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{filter.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </div>
-      </div>
-    );
   };
 
   const frameInfo = getFrameInfo();
@@ -616,13 +512,132 @@ export function GeneratePanelSelected({
             </div>
 
             {/* Action presets */}
-            <ActionSelector />
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">Action</Label>
+              <div className="flex flex-wrap gap-1.5">
+                <TooltipProvider delayDuration={300}>
+                  {ACTION_PRESETS.map((action) => (
+                    <Tooltip key={action.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => handleActionSelect(action.id)}
+                          className={cn(
+                            "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                            selectedAction === action.id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted hover:bg-muted/80 text-foreground",
+                          )}
+                        >
+                          {action.label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{action.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+            </div>
+
+            {/* Composition presets */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">Composition</Label>
+              <div className="flex flex-wrap gap-1.5">
+                <TooltipProvider delayDuration={300}>
+                  {COMPOSITION_PRESETS.map((composition) => (
+                    <Tooltip key={composition.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() =>
+                            handleCompositionSelect(composition.id)
+                          }
+                          className={cn(
+                            "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                            selectedComposition === composition.id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted hover:bg-muted/80 text-foreground",
+                          )}
+                        >
+                          {composition.label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{composition.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+            </div>
 
             {/* Style presets */}
-            <StyleSelector />
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <Label className="text-xs font-medium">Style</Label>
+                <span className="text-muted-foreground text-[10px]">
+                  Optional
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <TooltipProvider delayDuration={300}>
+                  {STYLE_PRESETS.map((style) => (
+                    <Tooltip key={style.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => toggleStyle(style.id)}
+                          className={cn(
+                            "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                            selectedStyles.includes(style.id)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted hover:bg-muted/80 text-foreground",
+                          )}
+                        >
+                          {style.label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{style.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+            </div>
 
             {/* Enhancement filters */}
-            <EnhancementFilters />
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <Label className="text-xs font-medium">Enhancements</Label>
+                <span className="text-muted-foreground text-[10px]">
+                  Optional
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <TooltipProvider delayDuration={300}>
+                  {ENHANCEMENT_FILTERS.map((filter) => (
+                    <Tooltip key={filter.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => toggleFilter(filter.id)}
+                          className={cn(
+                            "rounded-full px-2 py-1 text-[11px] font-medium transition-all",
+                            selectedFilters.includes(filter.id)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted hover:bg-muted/80 text-foreground",
+                          )}
+                        >
+                          {filter.label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{filter.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+            </div>
           </div>
         </ScrollArea>
 
@@ -651,6 +666,7 @@ export function GeneratePanelSelected({
         selections={{
           userPrompt: prompt,
           selectedAction,
+          selectedComposition,
           selectedStyles,
           selectedFilters,
         }}

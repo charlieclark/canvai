@@ -9,7 +9,7 @@ import { ProjectHeader, type SaveStatus } from "./_components/project-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   createShapeId,
   type Editor,
@@ -47,6 +47,12 @@ export default function ProjectPage() {
   );
   const [lastSelectedFrameId, setLastSelectedFrameId] =
     useState<TLShapeId | null>(null);
+  const lastSelectedFrameIdRef = useRef<TLShapeId | null>(null);
+
+  // Keep ref in sync with state to avoid stale closures in listeners
+  useEffect(() => {
+    lastSelectedFrameIdRef.current = lastSelectedFrameId;
+  }, [lastSelectedFrameId]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [frameCount, setFrameCount] = useState(0);
   const [newFrameAspectRatio, setNewFrameAspectRatio] =
@@ -103,10 +109,20 @@ export default function ProjectPage() {
       // Initial frame count
       updateFrameCount(editorInstance);
 
-      // Listen for shape changes to update frame count
+      // Listen for shape changes to update frame count and check for deleted frames
       const cleanup = editorInstance.store.listen(
         () => {
           updateFrameCount(editorInstance);
+
+          // Check if the last selected frame was deleted
+          if (lastSelectedFrameIdRef.current) {
+            const frameStillExists = editorInstance.getShape(
+              lastSelectedFrameIdRef.current,
+            );
+            if (!frameStillExists) {
+              setLastSelectedFrameId(null);
+            }
+          }
         },
         { source: "user", scope: "document" },
       ) as () => void;
@@ -290,7 +306,7 @@ export default function ProjectPage() {
         const selectionBounds = editor.getSelectionRotatedPageBounds();
         if (selectionBounds) {
           // Add padding inside the frame
-          const padding = 40;
+          const padding = 0;
           const availableWidth = displayWidth - padding * 2;
           const availableHeight = displayHeight - padding * 2;
 
