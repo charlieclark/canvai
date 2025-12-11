@@ -3,19 +3,13 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, Loader2, ImageIcon, Trash2, Sparkles } from "lucide-react";
-import {
-  createShapeId,
-  type Editor,
-  type TLAssetId,
-  type TLShapeId,
-} from "tldraw";
+import { Download, Plus, Loader2, ImageIcon, Trash2 } from "lucide-react";
 import type { Generation } from "@prisma/client";
 import Image from "next/image";
 import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
-import { AssetGenerationModal } from "./asset-generation-modal";
-import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
+import { AddAssetModal } from "./add-asset-modal";
+import type { AssetToAdd } from "../page";
 
 /**
  * Component that polls a single pending generation until complete
@@ -62,32 +56,20 @@ function PendingGeneration({
 
 interface GenerationsPanelProps {
   projectId: string;
-  editor: Editor | null;
-  selectedFrameId: TLShapeId | null;
+  onAddAssetToCanvas: (asset: AssetToAdd) => void;
 }
 
 export function GenerationsPanel({
   projectId,
-  editor,
-  selectedFrameId,
+  onAddAssetToCanvas,
 }: GenerationsPanelProps) {
   const { toast } = useToast();
   const utils = api.useUtils();
 
-  // Modal states
+  // Modal state
   const [assetModalOpen, setAssetModalOpen] = useState(false);
-  const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
-    useState(false);
-
-  // Get credits status
-  const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
-  const canGenerate = creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
 
   const handleOpenAssetModal = () => {
-    if (!canGenerate) {
-      setGenerationOptionsModalOpen(true);
-      return;
-    }
     setAssetModalOpen(true);
   };
 
@@ -123,96 +105,16 @@ export function GenerationsPanel({
   };
 
   const handleAddToCanvas = (generation: Generation) => {
-    if (!editor || !generation.imageUrl) return;
+    if (!generation.imageUrl) return;
 
-    // Create an image asset and shape on the canvas
-    const assetId = `asset:${generation.id}` as TLAssetId;
-
-    // Check if asset already exists
-    const existingAsset = editor.getAsset(assetId);
-    if (!existingAsset) {
-      editor.createAssets([
-        {
-          id: assetId,
-          type: "image",
-          typeName: "asset",
-          props: {
-            name: `Generation ${generation.id}`,
-            src: generation.imageUrl,
-            w: generation.width,
-            h: generation.height,
-            mimeType: "image/jpg",
-            isAnimated: false,
-          },
-          meta: {},
-        },
-      ]);
-    }
-
-    // If a frame is selected, place the image inside the frame and resize to fit
-    if (selectedFrameId) {
-      const frame = editor.getShape(selectedFrameId);
-      if (frame?.type === "frame") {
-        const frameProps = frame.props as { w: number; h: number };
-        const frameW = frameProps.w;
-        const frameH = frameProps.h;
-
-        // Calculate aspect-ratio-preserving dimensions to fit inside the frame
-        const imageAspect = generation.width / generation.height;
-        const frameAspect = frameW / frameH;
-
-        let newWidth: number;
-        let newHeight: number;
-
-        if (imageAspect > frameAspect) {
-          // Image is wider than frame - fit to frame width
-          newWidth = frameW;
-          newHeight = frameW / imageAspect;
-        } else {
-          // Image is taller than frame - fit to frame height
-          newHeight = frameH;
-          newWidth = frameH * imageAspect;
-        }
-
-        // Center the image within the frame (coordinates are relative to frame when parentId is set)
-        const offsetX = (frameW - newWidth) / 2;
-        const offsetY = (frameH - newHeight) / 2;
-
-        const shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "image",
-          x: offsetX,
-          y: offsetY,
-          parentId: selectedFrameId,
-          props: {
-            assetId: assetId,
-            w: newWidth,
-            h: newHeight,
-          },
-        });
-        editor.select(shapeId);
-        return;
-      }
-    }
-
-    // Default: Create image shape at center of viewport
-    const viewportCenter = editor.getViewportScreenCenter();
-    const pagePoint = editor.screenToPage(viewportCenter);
-
-    const shapeId = createShapeId();
-    editor.createShape({
-      id: shapeId,
-      type: "image",
-      x: pagePoint.x - generation.width / 2,
-      y: pagePoint.y - generation.height / 2,
-      props: {
-        assetId: assetId,
-        w: generation.width,
-        h: generation.height,
-      },
+    onAddAssetToCanvas({
+      id: generation.id,
+      name: `Generation ${generation.id}`,
+      src: generation.imageUrl,
+      width: generation.width,
+      height: generation.height,
+      mimeType: "image/jpg",
     });
-    editor.select(shapeId);
   };
 
   const handleDownload = async (generation: Generation) => {
@@ -244,8 +146,8 @@ export function GenerationsPanel({
             onClick={handleOpenAssetModal}
             className="w-full"
           >
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate Asset
+            <Plus className="mr-2 h-4 w-4" />
+            Add Asset
           </Button>
         </div>
 
@@ -334,15 +236,11 @@ export function GenerationsPanel({
       </ScrollArea>
     </div>
 
-      <AssetGenerationModal
+      <AddAssetModal
         projectId={projectId}
         open={assetModalOpen}
         onOpenChange={setAssetModalOpen}
-      />
-
-      <GenerationOptionsModal
-        open={generationOptionsModalOpen}
-        onOpenChange={setGenerationOptionsModalOpen}
+        onAddAssetToCanvas={onAddAssetToCanvas}
       />
     </>
   );

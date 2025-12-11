@@ -71,8 +71,8 @@ export function AssetGenerationModal({
 
     const baseLines = transparentBackground
       ? [
-          "Make sure the entire object is in view",
-          "Generate the object on a white background",
+          "Make sure the entire object is in view, and not cropped.",
+          "Generate the object on a white background.",
         ]
       : [];
 

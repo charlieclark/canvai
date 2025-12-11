@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useCallback } from "react";
-import type { Editor, TLShapeId } from "tldraw";
+import {
+  createShapeId,
+  type Editor,
+  type TLAssetId,
+  type TLShapeId,
+} from "tldraw";
 import { toast } from "sonner";
 import {
   ASPECT_RATIOS,
@@ -19,6 +24,15 @@ import {
   type AspectRatio,
   type Resolution,
 } from "@/lib/utils/image";
+
+export interface AssetToAdd {
+  id: string;
+  name: string;
+  src: string;
+  width: number;
+  height: number;
+  mimeType?: string;
+}
 
 const FRAME_DISPLAY_SCALE = 1;
 
@@ -108,6 +122,120 @@ export default function ProjectPage() {
       setLastSelectedFrameId(frameId);
     }
   }, []);
+
+  const zoomToFrameBounds = useCallback(
+    (frameId: TLShapeId) => {
+      if (!editor) return;
+      const updatedShape = editor.getShape(frameId);
+      if (!updatedShape) return;
+      const bounds = editor.getShapePageBounds(updatedShape);
+      if (!bounds) return;
+      editor.zoomToBounds(bounds, { animation: { duration: 200 } });
+    },
+    [editor],
+  );
+
+  // Unified function to add assets to canvas
+  const handleAddAssetToCanvas = useCallback(
+    (asset: AssetToAdd) => {
+      if (!editor) return;
+
+      const assetId = `asset:${asset.id}` as TLAssetId;
+
+      // Check if asset already exists, if not create it
+      const existingAsset = editor.getAsset(assetId);
+      if (!existingAsset) {
+        editor.createAssets([
+          {
+            id: assetId,
+            type: "image",
+            typeName: "asset",
+            props: {
+              name: asset.name,
+              src: asset.src,
+              w: asset.width,
+              h: asset.height,
+              mimeType: asset.mimeType ?? "image/png",
+              isAnimated: false,
+            },
+            meta: {},
+          },
+        ]);
+      }
+
+      let shapeId: TLShapeId;
+
+      // If we have a last selected frame, place the image inside it
+      if (lastSelectedFrameId) {
+        const frame = editor.getShape(lastSelectedFrameId);
+
+        if (!frame) {
+          return;
+        }
+
+        const frameProps = frame.props as { w: number; h: number };
+        const frameW = frameProps.w;
+        const frameH = frameProps.h;
+
+        // Calculate aspect-ratio-preserving dimensions to fit inside the frame
+        const imageAspect = asset.width / asset.height;
+        const frameAspect = frameW / frameH;
+
+        let newWidth: number;
+        let newHeight: number;
+
+        if (imageAspect > frameAspect) {
+          // Image is wider than frame - fit to frame width
+          newWidth = frameW * 0.25;
+          newHeight = newWidth / imageAspect;
+        } else {
+          // Image is taller than frame - fit to frame height
+          newHeight = frameH * 0.25;
+          newWidth = newHeight * imageAspect;
+        }
+
+        // Center the image within the frame
+        const offsetX = (frameW - newWidth) / 2;
+        const offsetY = (frameH - newHeight) / 2;
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "image",
+          x: offsetX,
+          y: offsetY,
+          parentId: lastSelectedFrameId,
+          props: {
+            assetId: assetId,
+            w: newWidth,
+            h: newHeight,
+          },
+        });
+        editor.select(shapeId);
+        zoomToFrameBounds(lastSelectedFrameId);
+      } else {
+        // No frame selected, place at viewport center
+        shapeId = createShapeId();
+        const viewportCenter = editor.getViewportScreenCenter();
+        const pagePoint = editor.screenToPage(viewportCenter);
+        editor.createShape({
+          id: shapeId,
+          type: "image",
+          x: pagePoint.x - asset.width / 2,
+          y: pagePoint.y - asset.height / 2,
+          props: {
+            assetId: assetId,
+            w: asset.width,
+            h: asset.height,
+          },
+        });
+        // Select and center on the added asset
+        editor.select(shapeId);
+        editor.zoomToSelection({ animation: { duration: 200 } });
+      }
+    },
+    [editor, lastSelectedFrameId],
+  );
 
   const handleSaveStatusChange = useCallback((status: SaveStatus) => {
     setSaveStatus(status);
@@ -320,8 +448,7 @@ export default function ProjectPage() {
         {/* Left Panel - Generations */}
         <GenerationsPanel
           projectId={projectId}
-          editor={editor}
-          selectedFrameId={selectedFrameId}
+          onAddAssetToCanvas={handleAddAssetToCanvas}
         />
 
         {/* Main Panel - Canvas */}
