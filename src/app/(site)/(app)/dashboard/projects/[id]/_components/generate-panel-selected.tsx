@@ -17,6 +17,7 @@ import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
 import {
   ASPECT_RATIOS,
+  RESOLUTIONS,
   DEFAULT_RESOLUTION,
   detectAspectRatio,
   detectResolution,
@@ -24,6 +25,13 @@ import {
   type AspectRatio,
   type Resolution,
 } from "@/lib/utils/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 import { ConfirmGenerationModal } from "./confirm-generation-modal";
 import {
@@ -58,6 +66,14 @@ export function GeneratePanelSelected({
     DEFAULT_ACTION_ID,
   );
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  // Frame dimension states - initialized from detected values
+  const [frameAspectRatio, setFrameAspectRatio] = useState<AspectRatio | null>(
+    null,
+  );
+  const [frameResolution, setFrameResolution] = useState<Resolution | null>(
+    null,
+  );
 
   // Modal states
   const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
@@ -145,6 +161,60 @@ export function GeneratePanelSelected({
       }
     };
   }, []);
+
+  // Initialize frame dimensions from current frame
+  useEffect(() => {
+    const shape = editor.getShape(generateFrameId);
+    if (shape?.type !== "frame") return;
+    const bounds = editor.getShapeGeometry(shape).bounds;
+    const detectedRatio = detectAspectRatio(bounds.width, bounds.height);
+    const detectedRes = detectResolution(
+      bounds.width,
+      bounds.height,
+      detectedRatio,
+    );
+    setFrameAspectRatio(detectedRatio);
+    setFrameResolution(detectedRes);
+  }, [editor, generateFrameId]);
+
+  // Resize frame when aspect ratio or resolution changes
+  const resizeFrame = useCallback(
+    (newAspectRatio: AspectRatio, newResolution: Resolution) => {
+      const shape = editor.getShape(generateFrameId);
+      if (shape?.type !== "frame") return;
+
+      const dimensions = getGenerationDimensions(newAspectRatio, newResolution);
+      const ratioInfo = ASPECT_RATIOS.find((r) => r.value === newAspectRatio);
+      const resolutionLabel = newResolution === 2 ? "2K" : "1K";
+
+      editor.updateShape({
+        id: generateFrameId,
+        type: "frame",
+        props: {
+          w: dimensions.width,
+          h: dimensions.height,
+          name: `${ratioInfo?.label ?? newAspectRatio} - ${resolutionLabel}`,
+        },
+      });
+    },
+    [editor, generateFrameId],
+  );
+
+  // Handle aspect ratio change
+  const handleAspectRatioChange = (value: AspectRatio) => {
+    setFrameAspectRatio(value);
+    if (frameResolution) {
+      resizeFrame(value, frameResolution);
+    }
+  };
+
+  // Handle resolution change
+  const handleResolutionChange = (value: Resolution) => {
+    setFrameResolution(value);
+    if (frameAspectRatio) {
+      resizeFrame(frameAspectRatio, value);
+    }
+  };
 
   // Toggle style selection
   const toggleStyle = (styleId: string) => {
@@ -256,26 +326,20 @@ export function GeneratePanelSelected({
     setConfirmModalOpen(open);
   };
 
-  // Get current frame info including detected resolution
+  // Get current frame info from selected values
   const getFrameInfo = () => {
-    const shape = editor.getShape(generateFrameId);
-    if (shape?.type !== "frame") return null;
-    const bounds = editor.getShapeGeometry(shape).bounds;
-    const detectedRatio = detectAspectRatio(bounds.width, bounds.height);
-    const detectedRes = detectResolution(
-      bounds.width,
-      bounds.height,
-      detectedRatio,
-    );
+    if (!frameAspectRatio || !frameResolution) return null;
     const aspectRatioInfo = ASPECT_RATIOS.find(
-      (r) => r.value === detectedRatio,
+      (r) => r.value === frameAspectRatio,
     );
     if (!aspectRatioInfo) return null;
     return {
       ...aspectRatioInfo,
-      resolution: detectedRes,
-      outputWidth: getGenerationDimensions(detectedRatio, detectedRes).width,
-      outputHeight: getGenerationDimensions(detectedRatio, detectedRes).height,
+      resolution: frameResolution,
+      outputWidth: getGenerationDimensions(frameAspectRatio, frameResolution)
+        .width,
+      outputHeight: getGenerationDimensions(frameAspectRatio, frameResolution)
+        .height,
     };
   };
 
@@ -448,6 +512,54 @@ export function GeneratePanelSelected({
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Frame Size Controls */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="frame-aspect-ratio" className="text-xs">
+                  Aspect Ratio
+                </Label>
+                <Select
+                  value={frameAspectRatio ?? undefined}
+                  onValueChange={(v) =>
+                    handleAspectRatioChange(v as AspectRatio)
+                  }
+                >
+                  <SelectTrigger id="frame-aspect-ratio" className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ASPECT_RATIOS.map((ratio) => (
+                      <SelectItem key={ratio.value} value={ratio.value}>
+                        {ratio.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="frame-resolution" className="text-xs">
+                  Resolution
+                </Label>
+                <Select
+                  value={frameResolution ? String(frameResolution) : undefined}
+                  onValueChange={(v) =>
+                    handleResolutionChange(Number(v) as Resolution)
+                  }
+                >
+                  <SelectTrigger id="frame-resolution" className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESOLUTIONS.map((res) => (
+                      <SelectItem key={res.value} value={String(res.value)}>
+                        {res.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
