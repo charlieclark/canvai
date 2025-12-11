@@ -50,14 +50,14 @@ interface GeneratePanelProps {
   projectId: string;
   editor: Editor | null;
   selectedFrameId: TLShapeId | null;
-  onFrameSelect: (frameId: TLShapeId | null) => void;
+  onAddFrame: () => void;
 }
 
 export function GeneratePanel({
   projectId,
   editor,
   selectedFrameId,
-  onFrameSelect,
+  onAddFrame,
 }: GeneratePanelProps) {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
@@ -682,7 +682,7 @@ export function GeneratePanel({
           </Button>
           <Button
             variant="outline"
-            onClick={() => onFrameSelect(null)}
+            onClick={() => onAddFrame()}
             className="w-full"
           >
             <Plus className="mr-2 h-4 w-4" />

@@ -21,6 +21,8 @@ export default function ProjectPage() {
   const [selectedFrameId, setSelectedFrameId] = useState<TLShapeId | null>(
     null,
   );
+  const [lastSelectedFrameId, setLastSelectedFrameId] =
+    useState<TLShapeId | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const utils = api.useUtils();
@@ -49,6 +51,9 @@ export default function ProjectPage() {
 
   const handleFrameSelect = useCallback((frameId: TLShapeId | null) => {
     setSelectedFrameId(frameId);
+    if (frameId) {
+      setLastSelectedFrameId(frameId);
+    }
   }, []);
 
   const handleSaveStatusChange = useCallback((status: SaveStatus) => {
@@ -124,8 +129,7 @@ export default function ProjectPage() {
           projectId={projectId}
           editor={editor}
           selectedFrameId={selectedFrameId}
-          onFrameSelect={() => {
-            handleFrameSelect(null);
+          onAddFrame={() => {
             editor?.selectNone();
           }}
         />
