@@ -7,6 +7,7 @@ import {
   getDefaultProvider,
   nanoBananaPro,
   imagenFast,
+  imagenFastTransparency,
   type ImageProvider,
 } from "@/server/ai";
 
@@ -279,6 +280,8 @@ export const generationRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         prompt: z.string().min(1).max(2000),
+        aspectRatio: aspectRatioSchema.optional().default("1:1"),
+        transparentBackground: z.boolean().optional().default(true),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -308,15 +311,15 @@ export const generationRouter = createTRPCRouter({
         });
       }
 
-      // Assets are always 1:1 square at default resolution
-      const dimensions = getGenerationDimensions("1:1", DEFAULT_RESOLUTION);
+      // Get dimensions for the selected aspect ratio
+      const dimensions = getGenerationDimensions(input.aspectRatio, DEFAULT_RESOLUTION);
 
       // Create generation record
       const generation = await ctx.db.generation.create({
         data: {
           projectId: input.projectId,
           prompt: input.prompt,
-          aspectRatio: "1:1",
+          aspectRatio: input.aspectRatio,
           width: dimensions.width,
           height: dimensions.height,
           status: "PENDING",
@@ -325,9 +328,12 @@ export const generationRouter = createTRPCRouter({
       });
 
       try {
-        // Start image generation with Imagen 4 Fast
+        // Start image generation with Imagen 4 Fast (with or without transparency)
+        const selectedAssetModel = input.transparentBackground
+          ? imagenFastTransparency
+          : assetModel;
         const prediction = await startGeneration(
-          assetModel,
+          selectedAssetModel,
           {
             prompt: input.prompt,
             width: dimensions.width,

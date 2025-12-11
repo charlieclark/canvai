@@ -198,6 +198,7 @@ export function buildEnhancedPrompt({
 }): string {
   const parts: string[] = [
     "Remove any shapes, lines or text that are annotations.",
+    "Ensure the generated image is cohesive and high quality.",
   ];
 
   // Add action prefix (always have one since transform-frame is default)

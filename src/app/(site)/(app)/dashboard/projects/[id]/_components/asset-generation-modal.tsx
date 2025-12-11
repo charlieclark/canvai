@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +13,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Sparkles, Loader2, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { api } from "@/trpc/react";
 import { InsufficientCreditModal } from "@/components/shared/insufficient-credit-modal";
+import { ASPECT_RATIOS, type AspectRatio } from "@/lib/utils/image";
 
 interface AssetGenerationModalProps {
   projectId: string;
@@ -29,6 +38,8 @@ export function AssetGenerationModal({
   onOpenChange,
 }: AssetGenerationModalProps) {
   const [prompt, setPrompt] = useState("");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
+  const [transparentBackground, setTransparentBackground] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showInsufficientCreditModal, setShowInsufficientCreditModal] =
     useState(false);
@@ -57,14 +68,20 @@ export function AssetGenerationModal({
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
+
+    const baseLines = transparentBackground
+      ? [
+          "Make sure the entire object is in view",
+          "Generate the object on a white background",
+        ]
+      : [];
+
     setIsGenerating(true);
     generateAssetMutation.mutate({
       projectId,
-      prompt: [
-        "Make sure the entire object is in view",
-        "Generate the object on a white background",
-        prompt.trim(),
-      ].join("\n"),
+      prompt: [...baseLines, prompt.trim()].join("\n"),
+      aspectRatio,
+      transparentBackground,
     });
   };
 
@@ -111,9 +128,41 @@ export function AssetGenerationModal({
                 rows={4}
                 className="resize-none"
               />
-              <p className="text-muted-foreground text-xs">
-                Assets are generated as 1:1 square images.
-              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
+              <Select
+                value={aspectRatio}
+                onValueChange={(value) => setAspectRatio(value as AspectRatio)}
+              >
+                <SelectTrigger id="aspect-ratio">
+                  <SelectValue placeholder="Select aspect ratio" />
+                </SelectTrigger>
+                <SelectContent className="z-[10000]">
+                  {ASPECT_RATIOS.map((ratio) => (
+                    <SelectItem key={ratio.value} value={ratio.value}>
+                      {ratio.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="transparent-background"
+                checked={transparentBackground}
+                onCheckedChange={(checked) =>
+                  setTransparentBackground(checked === true)
+                }
+              />
+              <Label
+                htmlFor="transparent-background"
+                className="cursor-pointer text-sm font-normal"
+              >
+                Make background transparent
+              </Label>
             </div>
           </div>
 

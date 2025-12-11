@@ -45,7 +45,7 @@ export const nanoBananaPro: ImageModelConfig<ImageGenerationInput> = {
 export const imagenFast: ImageModelConfig<ImageGenerationInput> = {
   name: "Imagen 4 Fast",
   modelIds: {
-    fal: "workflows/charlieclark/generate-remove-bg",
+    fal: "fal-ai/imagen4/preview/fast",
     replicate: "google/imagen-4-fast",
   },
   description: "Fast",
@@ -70,3 +70,30 @@ export const imagenFast: ImageModelConfig<ImageGenerationInput> = {
   },
 };
 
+export const imagenFastTransparency: ImageModelConfig<ImageGenerationInput> = {
+  name: "Imagen 4 Fast",
+  modelIds: {
+    fal: "workflows/charlieclark/generate-remove-bg",
+    replicate: "google/imagen-4-fast",
+  },
+  description: "Fast",
+
+  mapInput: (input, provider) => {
+    const aspectRatio = detectAspectRatio(input.width ?? 0, input.height ?? 0);
+
+    if (provider === "fal") {
+      return {
+        prompt: input.prompt,
+        aspect_ratio: aspectRatio,
+      };
+    }
+
+    // Replicate format
+    return {
+      prompt: input.prompt,
+      aspect_ratio: aspectRatio,
+      output_format: input.outputFormat ?? "jpg",
+      safety_filter_level: "block_only_high",
+    };
+  },
+};

@@ -376,20 +376,6 @@ export function GeneratePanelSelected({
     };
   };
 
-  // Credits display component
-  const CreditsDisplay = () => {
-    if (creditsStatus?.plan !== "SUBSCRIBED") return null;
-
-    return (
-      <div className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950">
-        <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-        <span className="font-medium text-amber-900 dark:text-amber-100">
-          {creditsStatus.credits} credits
-        </span>
-      </div>
-    );
-  };
-
   // Style selector component
   const StyleSelector = () => {
     return (
@@ -519,7 +505,6 @@ export function GeneratePanelSelected({
               </p>
             )}
           </div>
-          <CreditsDisplay />
         </div>
 
         <ScrollArea className="flex-1">
@@ -533,7 +518,7 @@ export function GeneratePanelSelected({
                     src={framePreviewUrl}
                     alt="Frame preview"
                     fill
-                    className="object-contain w-full h-full"
+                    className="h-full w-full object-contain"
                     unoptimized
                   />
                 ) : (
@@ -558,7 +543,10 @@ export function GeneratePanelSelected({
                     handleAspectRatioChange(v as AspectRatio)
                   }
                 >
-                  <SelectTrigger id="frame-aspect-ratio" className="h-8 text-xs">
+                  <SelectTrigger
+                    id="frame-aspect-ratio"
+                    className="h-8 text-xs"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

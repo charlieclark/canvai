@@ -64,18 +64,18 @@ export const ASPECT_RATIOS = [
     width: BASE_DIMENSIONS["3:4"].width,
     height: BASE_DIMENSIONS["3:4"].height,
   },
-  {
-    value: "3:2",
-    label: "3:2",
-    width: BASE_DIMENSIONS["3:2"].width,
-    height: BASE_DIMENSIONS["3:2"].height,
-  },
-  {
-    value: "2:3",
-    label: "2:3",
-    width: BASE_DIMENSIONS["2:3"].width,
-    height: BASE_DIMENSIONS["2:3"].height,
-  },
+  // {
+  //   value: "3:2",
+  //   label: "3:2",
+  //   width: BASE_DIMENSIONS["3:2"].width,
+  //   height: BASE_DIMENSIONS["3:2"].height,
+  // },
+  // {
+  //   value: "2:3",
+  //   label: "2:3",
+  //   width: BASE_DIMENSIONS["2:3"].width,
+  //   height: BASE_DIMENSIONS["2:3"].height,
+  // },
 ] as const;
 
 /**
