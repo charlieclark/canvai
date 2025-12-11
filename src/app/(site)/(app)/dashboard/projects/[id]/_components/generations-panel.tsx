@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, Loader2, ImageIcon, Trash2 } from "lucide-react";
+import { Download, Plus, Loader2, ImageIcon, Trash2, Sparkles } from "lucide-react";
 import {
   createShapeId,
   type Editor,
@@ -14,6 +14,8 @@ import type { Generation } from "@prisma/client";
 import Image from "next/image";
 import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
+import { AssetGenerationModal } from "./asset-generation-modal";
+import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
 
 /**
  * Component that polls a single pending generation until complete
@@ -71,6 +73,23 @@ export function GenerationsPanel({
 }: GenerationsPanelProps) {
   const { toast } = useToast();
   const utils = api.useUtils();
+
+  // Modal states
+  const [assetModalOpen, setAssetModalOpen] = useState(false);
+  const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
+    useState(false);
+
+  // Get credits status
+  const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
+  const canGenerate = creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
+
+  const handleOpenAssetModal = () => {
+    if (!canGenerate) {
+      setGenerationOptionsModalOpen(true);
+      return;
+    }
+    setAssetModalOpen(true);
+  };
 
   const { data: generations = [] } = api.generation.list.useQuery(
     { projectId },
@@ -211,13 +230,24 @@ export function GenerationsPanel({
   );
 
   return (
-    <div className="bg-muted/30 flex h-full w-64 flex-col border-r">
-      <div className="border-b p-4">
-        <h2 className="font-semibold">Generations</h2>
-        <p className="text-muted-foreground text-xs">
-          {completedGenerations.length} images
-        </p>
-      </div>
+    <>
+      <div className="bg-muted/30 flex h-full w-64 flex-col border-r">
+        <div className="space-y-3 border-b p-4">
+          <div>
+            <h2 className="font-semibold">Generations</h2>
+            <p className="text-muted-foreground text-xs">
+              {completedGenerations.length} images
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleOpenAssetModal}
+            className="w-full"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Asset
+          </Button>
+        </div>
 
       <ScrollArea className="flex-1">
         <div className="space-y-3 p-4">
@@ -303,5 +333,17 @@ export function GenerationsPanel({
         </div>
       </ScrollArea>
     </div>
+
+      <AssetGenerationModal
+        projectId={projectId}
+        open={assetModalOpen}
+        onOpenChange={setAssetModalOpen}
+      />
+
+      <GenerationOptionsModal
+        open={generationOptionsModalOpen}
+        onOpenChange={setGenerationOptionsModalOpen}
+      />
+    </>
   );
 }

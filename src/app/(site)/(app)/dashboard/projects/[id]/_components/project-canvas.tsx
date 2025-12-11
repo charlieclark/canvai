@@ -161,7 +161,7 @@ export function ProjectCanvas({
         }
       }
 
-      onFrameSelect(null);
+      // onFrameSelect(null);
     },
     [onFrameSelect],
   );

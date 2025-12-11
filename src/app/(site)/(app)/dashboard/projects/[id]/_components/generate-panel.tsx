@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Sparkles, Frame, Plus, ImageIcon, Coins } from "lucide-react";
+import { Sparkles, Frame, Plus, Coins } from "lucide-react";
 import type { Editor, TLShapeId } from "tldraw";
 import { api } from "@/trpc/react";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +33,6 @@ import {
   type Resolution,
 } from "@/lib/utils/image";
 import { GenerationOptionsModal } from "@/components/shared/generation-options-modal";
-import { AssetGenerationModal } from "./asset-generation-modal";
 import { ConfirmGenerationModal } from "./confirm-generation-modal";
 import {
   STYLE_PRESETS,
@@ -43,6 +42,7 @@ import {
   buildEnhancedPrompt,
 } from "@/config/generation-presets";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const FRAME_DISPLAY_SCALE = 1;
 
@@ -73,7 +73,6 @@ export function GeneratePanel({
   // Modal states
   const [generationOptionsModalOpen, setGenerationOptionsModalOpen] =
     useState(false);
-  const [assetModalOpen, setAssetModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmModalData, setConfirmModalData] = useState<{
     previewUrl: string;
@@ -81,11 +80,100 @@ export function GeneratePanel({
     resolution: Resolution;
   } | null>(null);
 
+  // Frame preview state
+  const [framePreviewUrl, setFramePreviewUrl] = useState<string | null>(null);
+  const framePreviewUrlRef = useRef<string | null>(null);
+  const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Get credits status (includes subscription info and API key status)
   const { data: creditsStatus } = api.generation.getCreditsStatus.useQuery();
 
   // User can generate if they have credits OR their own API key
   const canGenerate = creditsStatus?.hasCredits || creditsStatus?.hasOwnApiKey;
+
+  // Update frame preview when frame or its contents change
+  const updateFramePreview = useCallback(async () => {
+    if (!editor || !selectedFrameId) {
+      if (framePreviewUrlRef.current) {
+        URL.revokeObjectURL(framePreviewUrlRef.current);
+        framePreviewUrlRef.current = null;
+      }
+      setFramePreviewUrl(null);
+      return;
+    }
+
+    try {
+      const shape = editor.getShape(selectedFrameId);
+      if (shape?.type !== "frame") return;
+
+      const { blob } = await editor.toImage([selectedFrameId], {
+        format: "png",
+        background: true,
+        quality: 80,
+        scale: 0.5, // Lower scale for preview to improve performance
+      });
+
+      // Revoke previous URL to prevent memory leaks
+      if (framePreviewUrlRef.current) {
+        URL.revokeObjectURL(framePreviewUrlRef.current);
+      }
+
+      const url = URL.createObjectURL(blob);
+      framePreviewUrlRef.current = url;
+      setFramePreviewUrl(url);
+    } catch (error) {
+      console.error("Failed to update frame preview:", error);
+    }
+  }, [editor, selectedFrameId]);
+
+  // Listen for editor changes and update preview (debounced)
+  useEffect(() => {
+    if (!editor || !selectedFrameId) {
+      if (framePreviewUrlRef.current) {
+        URL.revokeObjectURL(framePreviewUrlRef.current);
+        framePreviewUrlRef.current = null;
+      }
+      setFramePreviewUrl(null);
+      return;
+    }
+
+    // Initial preview
+    void updateFramePreview();
+
+    // Listen for store changes and update preview with debounce
+    const removeListener = editor.store.listen(
+      () => {
+        // Clear existing timeout
+        if (previewTimeoutRef.current) {
+          clearTimeout(previewTimeoutRef.current);
+        }
+        // Debounce preview updates to avoid excessive rendering
+        previewTimeoutRef.current = setTimeout(() => {
+          void updateFramePreview();
+        }, 300);
+      },
+      { source: "user", scope: "document" },
+    ) as () => void;
+
+    return () => {
+      removeListener();
+      if (previewTimeoutRef.current) {
+        clearTimeout(previewTimeoutRef.current);
+      }
+    };
+  }, [editor, selectedFrameId, updateFramePreview]);
+
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (framePreviewUrlRef.current) {
+        URL.revokeObjectURL(framePreviewUrlRef.current);
+      }
+      if (previewTimeoutRef.current) {
+        clearTimeout(previewTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Toggle style selection
   const toggleStyle = (styleId: string) => {
@@ -245,15 +333,6 @@ export function GeneratePanel({
       setConfirmModalData(data);
       setConfirmModalOpen(true);
     }
-  };
-
-  // Handle asset button click
-  const handleOpenAssetModal = () => {
-    if (!canGenerate) {
-      setGenerationOptionsModalOpen(true);
-      return;
-    }
-    setAssetModalOpen(true);
   };
 
   // Handle generation success
@@ -512,37 +591,8 @@ export function GeneratePanel({
                 Create Frame
               </Button>
             </div>
-
-            {/* Divider */}
-            <div className="my-6 flex items-center gap-3">
-              <div className="bg-border h-px flex-1" />
-              <span className="text-muted-foreground text-xs">or</span>
-              <div className="bg-border h-px flex-1" />
-            </div>
-
-            {/* Generate Asset section */}
-            <div className="space-y-3">
-              <Button
-                onClick={handleOpenAssetModal}
-                variant="outline"
-                className="w-full"
-              >
-                <ImageIcon className="mr-2 h-4 w-4" />
-                Generate Asset
-              </Button>
-              <p className="text-muted-foreground text-center text-xs">
-                Create standalone images from a text prompt without using a
-                frame.
-              </p>
-            </div>
           </div>
         </div>
-
-        <AssetGenerationModal
-          projectId={projectId}
-          open={assetModalOpen}
-          onOpenChange={setAssetModalOpen}
-        />
 
         <GenerationOptionsModal
           open={generationOptionsModalOpen}
@@ -573,6 +623,28 @@ export function GeneratePanel({
 
         <ScrollArea className="flex-1">
           <div className="space-y-5 p-4">
+            {/* Frame Preview */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">Frame Preview</Label>
+              <div className="bg-muted relative aspect-video overflow-hidden rounded-lg border-2 border-primary/50">
+                {framePreviewUrl ? (
+                  <Image
+                    src={framePreviewUrl}
+                    alt="Frame preview"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <div className="text-muted-foreground text-xs">
+                      Loading preview...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Prompt input */}
             <div className="space-y-2">
               <div className="flex items-baseline gap-2">
