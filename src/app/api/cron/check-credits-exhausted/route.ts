@@ -40,9 +40,10 @@ export async function GET() {
   });
 
   const alreadyNotifiedIds = new Set(alreadyNotified.map((n) => n.userId));
-  const usersToNotify = freeUsersWithNoCredits.filter(
-    (u) => !alreadyNotifiedIds.has(u.id),
-  );
+  const usersToNotify = freeUsersWithNoCredits
+    .filter((u) => !alreadyNotifiedIds.has(u.id))
+    // send max 5
+    .slice(0, 5);
 
   if (usersToNotify.length === 0) {
     return Response.json({
@@ -60,7 +61,7 @@ export async function GET() {
   const failedCount = results.filter((r) => r.status === "rejected").length;
 
   return Response.json({
-    message: `Queued ${successCount} emails, ${failedCount} failed`,
+    message: `Sent ${successCount} emails, ${failedCount} failed`,
     successCount,
     failedCount,
     totalEligible: usersToNotify.length,
